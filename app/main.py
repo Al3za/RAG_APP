@@ -4,7 +4,7 @@ from app.core.config import settings
 
 app = FastAPI(title=settings.APP_NAME) # "RAG PDF API"
 
-app.include_router(health_router) # "/healt", impo
+app.include_router(health_router) # "/healt", import api endpoint defined in app.api.health (scalable)
 
 @app.get("/")
 def root():

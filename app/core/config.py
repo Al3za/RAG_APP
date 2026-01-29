@@ -5,6 +5,6 @@ load_dotenv()
 
 class Settings:
     APP_NAME = "RAG PDF API"
-    ENV = os.getenv("ENV", "dev")
+    ENV = os.getenv("ENV", "dev")  # default "dev" se non definito
 
 settings = Settings()
