@@ -2,6 +2,8 @@ from fastapi import  APIRouter, UploadFile, File, Form
 import boto3
 import os
 from uuid import uuid4
+from dotenv import load_dotenv
+load_dotenv()
 
 router = APIRouter()
 
@@ -13,6 +15,7 @@ s3 = boto3.client(
 ) # connessione con il nostro aws "user", dove abbiamo allegato permessi e policy di read/update/delete verso il bucket s3, quello che ospitera i pdf dei clienti che useranno l'app
 
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
+# print('BUCKET_NAME checkd', BUCKET_NAME)
 
 @router.post("/upload_pdf")
 async def upload_pdf(user_id: str = Form(...), file: UploadFile = File(...)):
