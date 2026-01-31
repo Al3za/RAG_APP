@@ -1,0 +1,55 @@
+# FAI QUESTO PRIMA DI PROCEDERE
+
+# crea l'index da da vs code, e non dall'interfaccia pinecon perche' da li' non puoi creare l'index con 
+# text-embedding-3-small (1536) (compatibile con OpenAIEmbeddings, e
+#  adatto per questa rag app demo con solo 10 pdf).
+
+# import pinecone
+# import os
+
+# pinecone.init(
+#     api_key=os.environ.get("PINECONE_API_KEY"),
+#     environment=os.environ.get("PINECONE_ENVIRONMENT")
+# )
+
+# index_name = "rag-pdf-index" (da inserire in .env)
+
+# # crea index solo se non esiste
+# if index_name not in pinecone.list_indexes():
+#     pinecone.create_index(
+#         name=index_name,
+#         dimension=1536,  # 1536 corrisponde a text-embedding-3-small usato di default in OpenAIEmbeddings (embeddings_model = OpenAIEmbeddings())
+#         metric="cosine"
+#     )
+
+
+
+# 1️⃣ Cosa sono i modelli text-embedding-3-small e text-embedding-3-large
+
+# Gli embedding trasformano un testo in un vettore numerico che cattura il significato semantico del testo.
+# Pinecone poi usa questi vettori per fare similarity search (cioè trovare chunk di testo simili a una query).
+
+# Modello	Dimensione	Velocità	Costo	Precisione / Qualità
+# text-embedding-3-small	1536	veloce	basso	buona per documenti piccoli/medi
+# text-embedding-3-large	3072	più lento	più alto	migliore, più preciso per documenti complessi o lunghi
+
+# Small: ottimo per prototipi o PDF di dimensioni medie, e per un numero limitato di utenti.
+
+# Large: utile se hai PDF molto lunghi o complessi, e vuoi risultati di retrieval più accurati.
+
+
+
+
+# 2)
+
+# Qua vedi semplicemente se environment corrisponde a "us-west1-gcp", e se cosi inseriamo questo value in .env
+# import pinecone
+
+# pinecone.init(
+#     api_key="LA_TUA_API_KEY",
+#     environment="us-west1-gcp"
+# )
+# print(pinecone.list_indexes())
+# Se funziona e non dà errori → hai l’environment corretto
+
+# Poi puoi continuare a creare l’index e inserire embeddings

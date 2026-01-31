@@ -27,3 +27,7 @@ async def upload_pdf(user_id: str = Form(...), file: UploadFile = File(...)):
     s3.upload_fileobj(file.file, BUCKET_NAME, file_key)
     
     return {"message": "PDF uploaded successfully", "file_key": file_key}
+
+
+
+
