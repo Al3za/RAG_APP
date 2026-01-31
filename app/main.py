@@ -10,7 +10,7 @@ app.include_router(upload_router)
 
 @app.get("/")
 def root():
-    return {"message": "RAG API running"}
+    return {"message": "RAG API running (autodeploy working)"}
 
 
 # Avvio locale
