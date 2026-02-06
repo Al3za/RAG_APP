@@ -1,15 +1,17 @@
 from fastapi import FastAPI
 from app.api.health import router as health_router # import the endpoint createn on this path
 from app.api.upload import router as upload_router # /upload_pdf
+from app.api.chat import router as chat_router # dove facciamo le domande a chat riguardo i pdf
 from app.core.config import settings
 
 app = FastAPI(title=settings.APP_NAME) # "RAG PDF API"
 
-app.include_router(health_router) # "/healt", import api endpoint defined in app.api.health (scalable)
+app.include_router(health_router) 
 app.include_router(upload_router)
+app.include_router(chat_router) 
 
 @app.get("/")
-def root():
+def root():  
     return {"message": "RAG API running (autodeploy working)"}
 
 

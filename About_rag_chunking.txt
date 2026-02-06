@@ -1,0 +1,212 @@
+ok chat, ho fixato il codice come mi hai detto tu, e ho l'ho testato su un nuovo pdf di solo testo(no imagini), e il risultato alla domanda "ciao chat, riassumi brevemente di cosa si tratta il contenuto del documento" e stato abbastanza soddisfacente. direi che siamo messi bene fino ad ora. 
+ 
+Tuttavia si deve ancora migliorare. 
+ho recentemente letto un articolo chiamato "a complete guide to Rag Chunking", dove dice:
+
+1)  Il Chunking e' fondamentale per il corretto funzionamento delle applicazioni rag. 
+ Secondo questo articolo, se il chunking e fatto male:
+ il retrival fails,
+hallucinations increase,
+context gets fragmented,
+token coast explodes.
+
+secondo questo articolo i passi importanti da seguire sono:
+
+2. 
+Fare "Good chunks", significa non "tagliare" i chunks senza in modo che il chunk non abbia senso ("cut chunk mid-idea"), ma fare in modo che ogni chunks abbia una frase finita e sensata ("one complete thought").
+
+3. Chunking controlls the RAG failure modes:
+          failure                                             Root Cause
+LLM makes things up                            Missing chunks
+Wrong answers                                     Chunks too small
+Vague answer                                       Chunks too large
+High cost                                               Over long chunks
+low recall                                               Chung boundaries break meaning
+
+4. Core chunking parameters
+4.1 Chunk Size
+measured in tokens or characters
+
+ Use case                                   Recomended size
+    FAQs                                       200-400 tokens
+Documentation                         400-800 tokens
+
+Why? 
+  1) Embeddings lose precision after 800 tokens
+  2) LLM context gets polluted with noise
+
+4.2 OVERLAP
+Chunks must overlap so knowledge isn't cut.
+exemple with 20% overlap: (yaml)
+  chunk 1: Tokens 0-400
+  chunk 1: Tokens 320-720
+  chunk 1: Tokens 640-1040
+
+Overlap preserves :
+  1) Definitions
+  2) Cross-sentence logic
+  2) References
+Typical overlap 10-25 %
+
+5. The 5 Real Chunking Strategies (lets break down what actually really works in production)
+
+5.1 Fixed side-chunking
+Split by token count: (sql)
+Every 500 tokens -> new chunk
+
+Pros:
+  1) fast
+  2) simple
+  3) works for uniform text
+
+Cons:
+   1) breaks sentences
+   2) Breaks tables
+   3) Breaks meanings
+
+5.2 Sentence-Based Chunking
+split by sentence boundaries 
+(pgsql):
+Group sentences until token limits is hit. (Mutch better than fixed size)
+
+
+Pros:
+  1) Preserves Grammar 
+  2) Less semantic damage
+
+Cons:
+   1) Still breaks topics boundaries
+
+5.3 Semantic Chunking
+This is where real RAG begins
+
+You use:
+  1) Sentence Embeddings
+  2) Cosine Similarity
+  3) Break where similarity drops
+Exemple:
+(java)
+If  similarity(sentence_i, sentence_i+1) < threshold -> new chunk
+This produces:
+    1) Concept-alligned chunks
+    2) Self-contained knowledge blocks
+This is the default for high quality RAG systems
+
+5.4 Document Structure Chunking
+Split by:
+   1) Headers
+   2) Sections
+   3) Paragraphs
+   4) Bullet grups
+Exemple:
+## Installation
+    ->one chunk
+## Congiguration
+   -> one chunk
+
+## Api reference
+  -> Sub-chunks per endpoint
+This is perfect for:
+    1) Docs
+    2) Wikis
+    3) Policies
+    4) Research papers
+
+always preserve headings inside chunks
+
+5.5 Hybrid chunking (Production standard)
+Best practice :
+    1) Split by document structure
+    2) Inside each section, apply semantic chunkings
+    3) Apply size limit + Overlapp
+This creates:
+    1) Logical Coherent chunks
+    2) Embeddings-friend size
+    3)Retrival-optimized knowledge blocks
+
+6. Chunk Metadata is as Important as Text
+    every chunk should store for exemple:
+    {
+     "chunk_id":"doc1_sec2_p3",
+     "document":"Api_guide.pdf",
+     "section":"Authentication",
+     "page":"12"
+     "tokens":"400"
+     }
+Why? 
+Because retrival without metadata is blind
+
+Metadata enables Filtering, source citations, page-level grounding, reranking...
+
+7. What happens after Chuking
+The rieal pipeline:
+  Raw_docs
+  -> Chunking
+  -> Embedding each chunk
+  -> Vector db
+  -> Query embedding
+  -> Similarity search
+  -> Top -k chunks
+  -> Reranker(optional)
+  -> LLM
+
+Bad chunking = garbage embeddings
+
+Chunk size Vs retrival Accuracy
+
+Here is the Trade of:
+
+Chunk size                         Retrival                                     LLM quality
+Too small             High Recall, low precision                  Fragmented answers
+Too large                          low Recall                              Irrelevant context
+Just right                     High Recall + precision                 clean answers
+
+The sweet spot is:
+300-800 tokens with semantic boundaries
+
+9. How Chunking impacts Hallucinations
+LLM hallucinate when:
+    1) Required fact is not in retrived chunks 
+    2) Fact is split across chunks
+    3) chunk is too noisy
+
+Good chunks reduce halliucinations more than Prompt eng, Temperature tuning and Model size.
+
+10. Special chunking Cases
+
+10.1 PDFs
+   chunk by:
+   Page -> Section -> Paragraph
+
+11. How to know if your chunking is bad?
+ask your rag sistem something about the file you uploaden, and if the res is vague, half-correct or missing details, then you rag model has to get better.
+
+
+P.s, questo e' il mio attuale metadata del file pdf che ho appena caricato:
+ ID: 0230cf83-f8de-4c64-bd24-db0e5fb4bd58
+
+author: ""
+
+creationdate: "2023-08-07T21:21:56-04:00"
+
+creator: "LaTeX with hyperref"
+
+keywords: ""
+
+moddate: "2023-08-07T21:21:56-04:00"
+
+page: 0
+
+page_label: "1"
+
+producer: "dvips + GPL Ghostscript GIT PRERELEASE 9.22"
+
+source: "C:\\Users\\ale\\AppData\\Local\\Temp\\tmpg7uc1mbd.pdf"
+
+subject: ""
+
+text: "published in 1929. What makes it most interesting is its publication in “An nali dell’istruzione media” [3]\n– a journal sponsored by the Italian Ministry of Schooling and Educa tion. The magazine was addressed\nto teachers and principals of middle and high schools; its aim was to pre sent news and reﬂections on\nthe school system, at a time when fascism had not yet been consolid ated as a regime. This journal also\nincluded articles on the current problems in the relevant disciplines, in cluding sciences.\nThe historical context of the Italian school system at the time mak es it more interesting the presence\nof Fermi’s article into this journal. By 1923 the Gentile’s school refor m had come into eﬀect in Italy."
+
+title: ""
+
+total_pages: 6 ( va bene secondo gli standard descritti sopra?)
