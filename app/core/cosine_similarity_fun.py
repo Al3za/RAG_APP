@@ -11,8 +11,8 @@ def cosine_similarity(a: np.ndarray, b: np.ndarray) -> float:
 
 def semantic_chunk_paragraphs(paragraph_docs, 
                               embeddings_model, 
-                              sim_threshold=0.8,
-                              max_chars=1200):   # ≈ 200 tokens: limite consigliato per embeddings 
+                              sim_threshold=0.65,
+                              max_chars=1200):    # ≈ 200 tokens: limite consigliato per embeddings 
                             #   affidabili e precisi. Se superiori, risultano annacquati
     """
     paragraph_docs: lista in formato "Document"(con dati testo e metadata) dei un paragrafi che abbiamo creato nel file ingest.py
@@ -22,7 +22,6 @@ def semantic_chunk_paragraphs(paragraph_docs,
     """
     if not paragraph_docs:
         return []
-
     # 🔹 Pre-compute embeddings per paragrafo (rate-limit friendly). serve per trasformare i paragrafi
     # definiti in paragraph_docs in embeddings per poterlipassare alla funzione cosine_similarity, 
     # che misura la similarita' tra gli embeddings. se i paragrafi sono simili, questi vengono agregati, fino ad un limite(max_chars) di 1200 char.
@@ -34,6 +33,7 @@ def semantic_chunk_paragraphs(paragraph_docs,
         for doc in paragraph_docs
     ] # ricaviamo un array contenente gli embeddings di tutti i chunks. Coordinate degli embeddings
     # necessarie per attingere(da dentro il loop sotto), ai corretti emb di ogni chunk
+    print('paragraph_embeddings len =', len(paragraph_embeddings))
      
 
     final_chunks = []
@@ -43,26 +43,28 @@ def semantic_chunk_paragraphs(paragraph_docs,
     current_chunk_text = paragraph_docs[0].page_content # il text data del paragrafo. (cambia dentro il loop)
     current_meta = dict(paragraph_docs[0].metadata) # il  dict dei metadati del paragrafo 
     current_meta["paragraph_end_index"] = current_meta["paragraph_index"] # (cambia dentro il loop)
+    current_meta["page_start"] = current_meta["page_start"] 
+    current_meta["page_end"] = current_meta["page_end"] # (cambia dentro il loop)
     
+
      # embedding del chunk aggregato (inizialmente = primo paragrafo)
     current_embedding = paragraph_embeddings[0] # l'embedding iniziale. (cambia nel loop)
-    
+    print('paragraph_docs =', paragraph_docs)
     # Loop principale (il cuore della funzione).
     # Qui Iteri sui chunk successivi uno a uno
     for i in range(1, len(paragraph_docs)): # passiamo questi dati di 
         # Per ogni chunk, decidi se fonderlo col corrente o chiudere il chunk corrente.
         # ricorda che il primo chunk sopra e' il riferimento iniziale che avvia cio'
         next_text = paragraph_docs[i].page_content
-        next_embedding = paragraph_embeddings[i] # l'embedding del chunk successivo(perche range(1,.. parte da 1), che viene 
-        # confrontato nella funzione cosine con quello precedente(current_embedding), o con i chunk "merged" precedenti
+        next_embedding = paragraph_embeddings[i] # confrontato nella funzione cosine con quello precedente(current_embedding), o con i chunk "merged" precedenti
 
         # 🔹 similarità: CHUNK AGGREGATO vs PARAGRAFO
         # in caso 3 o piu' chunks sono simili semanticamente, confronti i merged chunks(A+B) con il
         # chunk  C
         # al primo turn del loop, confrontiamo l'embeddings del primo emb chunk con il secondo
         # emb chunk, ricavato dall'array di emb chunks definito in paragraph_embeddings[i]
-        sim = cosine_similarity(current_embedding, next_embedding) # Ps. "current_embedding" viene 
-        # aggiornato continuamente ad ogni turn del loop, e cambia diversamente in base se i chunks
+        sim = cosine_similarity(current_embedding, next_embedding)  # aggiornato continuamente ad ogni turn del loop, e cambia diversamente in base se i chunks
+        print(f"SIM {i-1}->{i}: {sim:.3f}")
         #  sono "stati uniti" o meno. Se sono stati uniti i chunks allora "current_embedding"
         # aggiornato e' uguale risultera all'unione di questi embeddings diviso diviso 2.
         # E quindi il loop procede e sempre nella funzione cosine_similarity calcoleremo la similarita' 
@@ -78,21 +80,27 @@ def semantic_chunk_paragraphs(paragraph_docs,
 
         # 🔹 controllo dimensione. calcoli quanto diventerebbe grande il chunk prima di unirlo
         # evitare embedding > 200 tokens (per token piu' precisi e meno rumorosi, annacquati)
+
+      
         merged_size = len(current_chunk_text) + 1 + len(next_text)
 
-        # Decisione di merge (la regola d’oro). al primo turn del loop come abbiamo detto verifichiamo
+         # Decisione di merge (la regola d’oro). al primo turn del loop come abbiamo detto verifichiamo
         # riportiamo quanti di questi chunks hanno una similarita semantica >= 0.8 al primo emb chunk 
         if sim >= sim_threshold and merged_size <= max_chars:
-            # ✅ merge tra chunks consentito a queste condizioni, tra i chunks con similarta' >= 0.8
+             # ✅ merge consentito tra i chunks con similarta' >= 0.8 e totale lungezza di 1200 char
             # aggiorniamo current_chunk_text e metadata
-            current_chunk_text += " " + paragraph_docs[i].page_content 
-            current_meta["paragraph_end_index"] = paragraph_docs[i].metadata["paragraph_index"] # uniamo i metadati dei paragrafi
-            
+            current_chunk_text += " " + paragraph_docs[i].page_content # merge chunks
+            current_meta["paragraph_end_index"] = paragraph_docs[i].metadata["paragraph_index"]
+            current_meta["page_start"] = min(current_meta["page_start"], paragraph_docs[i].metadata["page_start"])
+            current_meta["page_end"] = max(current_meta["page_end"], paragraph_docs[i].metadata["page_end"])
+
+            # current_meta["page_end"] = paragraph_docs[i].metadata["page_end"] 
+       
             # questa soluzione va bene per iniziare, poi se e' necessario passiamo all soluzione 
             # sotto. (leggi a cosa serve nella desc di current_embedding appena sotto)
             current_embedding = (
                 current_embedding + next_embedding
-            ) / 2.0 # Dividiamo per 2 perché stiamo mediando due entità semantiche. Dopo un merge, (A+B) diventa una sola entità
+            ) / 2.0  # Dividiamo per 2 perché stiamo mediando due entità semantiche. Dopo un merge, (A+B) diventa una sola entità
             
             # 🔹 tieni traccia del peso. Questi dati ci servono per creare un nuovo current_embedding piu' preciso e pesato
             #  in base hai chunks che abbiamo "merged"
@@ -107,19 +115,22 @@ def semantic_chunk_paragraphs(paragraph_docs,
             #     current_embedding * current_weight +
             #     next_embedding * next_weight
             # ) / (current_weight + next_weight)
+           
 
         else:
             # ❌ chiudi chunk corrente. se lo emb chunk non ha nessuna similarita semantica con il next
             # emb chunk, o se l'unione dei chunks supera i 1200 char, allora salviamo il 'merged' chunk
             # definito in if...:
-            final_chunks.append( # appendiamo i nuovi chunks uno alla volta in final_chunks array
-                Document(page_content=current_chunk_text, metadata=current_meta)
+            final_chunks.append( # appendiamo i nuovi chunks (merged e non merged) uno alla voltanel final_chunks array
+                Document(page_content=current_chunk_text, 
+                         metadata=current_meta)
             )
-            # ...e facciamo update di questi variabili per continuare a verificare la similarita semantica sul resto dei chunks
             
             current_chunk_text = next_text
             current_meta = dict(paragraph_docs[i].metadata)
-            current_meta["paragraph_end_index"] = current_meta["paragraph_index"]
+            current_meta["paragraph_end_index"] = paragraph_docs[i].metadata["paragraph_index"]
+            current_meta["page_start"] = min(current_meta["page_start"], paragraph_docs[i].metadata["page_start"])
+            current_meta["page_end"] = max(current_meta["page_end"], paragraph_docs[i].metadata["page_end"])# (cambia dentro il loop)
             current_embedding = next_embedding # next emb sara comparato con next_next emb per vedere se c e similarita 
 
     # aggiungi ultimo chunk.

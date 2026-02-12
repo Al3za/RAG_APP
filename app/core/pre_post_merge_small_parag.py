@@ -1,47 +1,64 @@
 from langchain_core.documents import Document
 # Unire i paragraph troppo piccoli (super-pulito ✨) 
 
-# facciao merge di chunks < 130 char perche gli embeddings di questi piccoli chunks possono causare imprecisione, e portano
+# in pre_merge_small_paragraphs:
+# facciamo merge di chunks < 130 char perche gli embeddings di questi piccoli chunks possono causare imprecisione, e portano
 # il modello a confondersi, risultando in un possibile bad retrival
 
+# ✔ Unisce small tra loro
+# ✔ Unisce smal chunks al precedente o prossimo chiunk al patto di non creare un chunk > 600 char
+# altrimenti unisce i chunks tra loro(tutto ✅ Solo se stessa pagina)
+# Unisce small al precedente grande
 
-def pre_merge_small_paragraphs(paragraph_docs, 
-                               min_chars=130,
-                               max_chars=600):
+# Solo stessa pagina
+
+# Mantiene max 600
+
+# Non crea incoerenze
+
+from langchain_core.documents import Document
+
+def pre_merge_small_paragraphs(
+    paragraph_docs,
+    min_chars=130,
+    max_chars=600
+):
     if not paragraph_docs:
         return paragraph_docs
 
     merged = []
-    buffer = None
 
-    for doc in paragraph_docs: # paragraph_docs = the cleaned paragraf extracted from each pdf page (window 2)
+    for doc in paragraph_docs:
+        text = doc.page_content
+        text_len = len(text)
+        page = doc.metadata.get("page_start")
 
-        text_len = len(doc.page_content) # lunghezza dei char di ogni paragrafo
-        
+        # 🔹 Caso 1: chunk piccolo
         if text_len < min_chars:
-            if buffer is None:
-                buffer = doc # doc = paragraph
-            else:
-                # evita chunk gigante nel caso chi fossero ad esempio 10 paragrafi < 130 char. qui evitiamo questa grande concatenazione,
-                # creando un unione di paragrafi per un massimo di 600 char. I paragrafi overflowed andranno a creare un nuovo chunk
-                # sempre con questo limite massimo, e senza perdere semanticita'.
-                if len(buffer.page_content) + text_len <= max_chars:
-                   buffer.page_content += " " + doc.page_content
-                else:
-                    merged.append(buffer)
-                    buffer = doc
-        
-        else:
-            if buffer is not None:
-                # buffer.page_content += " " + doc.page_content
-                merged.append(buffer)
-                buffer = None
-            merged.append(doc)    
+            print('pre_merge_small_paragraphs hit')
+            print('small text to merge =', doc.page_content)
+            if merged:
+                prev_doc = merged[-1]
+                prev_len = len(prev_doc.page_content)
+                prev_page = prev_doc.metadata.get("page_start")
 
-    if buffer is not None:
-        merged.append(buffer)
+                # ✅ stessa pagina + non supera max_chars
+                if prev_page == page and (prev_len + 1 + text_len) <= max_chars:
+                    prev_doc.page_content += " " + text
+
+                    # aggiorniamo eventuale page_end se serve
+                    prev_doc.metadata["page_end"] = doc.metadata.get("page_end")
+                    continue
+
+            # ❌ non possiamo unirlo → lo aggiungiamo separato
+            merged.append(doc)
+
+        # 🔹 Caso 2: chunk normale/grande
+        else:
+            merged.append(doc)
 
     return merged
+
 
 
 
@@ -92,10 +109,10 @@ def post_merge_small_chunks( # Con il mio setup attuale (base chunk: 450 chars e
                 )
                 skip_next = True # “NON fare merge a catena” — cosa significa davvero. 
                 # Questo evita di concatenare piu' small chunks. Solo 1 chunk < 250 char si puo' concatenare al precedente o al prossimo. 
-                # E consigliato concatenare massimo uno perche se avessimo tanti piccoli chunks che si andrebbero a concatenare, si potrebbe 
-                # perdere semanticita', perche' ci sarebbe il rischio che stessimo mescolando informazioni diverse tra loro.
-                # per questo e' anche importante che ogni piccolo chunk sia unito con il chunk  precedente o quello subito dopo, 
-                # questo perche essendo vicini e' piu' probabile che questi condividano informazioni simili
+                # E consigliato concatenare massimo uno perche' se avessimo tanti piccoli chunks che si andrebbero a concatenare, si potrebbe 
+                # perdere semanticita', perche' ci sarebbe il rischio che stessimo mescolando informazioni di diversi chunk tra loro.
+                # per questo e' anche importante che ogni piccolo chunk sia unito solo con il chunk appena precedente o quello subito dopo, 
+                # questo perche' essendo vicini e' piu' probabile che questi condividano informazioni simili.
                 continue
 
         # fallback: resta solo

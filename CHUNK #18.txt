@@ -1,0 +1,72 @@
+CHUNK #18
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 442
+TEXT: direttamente per mezzo dell’ultra-microscopio; il movimento delle par ticelle ` e dovuto, come ` e ben noto, agli urti che esse ricevono da parte delle molecole del liquido in cui son o immerse, le quali sono in movimento per eﬀetto dell’agitazione termica. Il pi` u potente metodo per l’investigazione dei fenomeni elementa ri ` e quello della nebbia di Wilson, che permette di rendere visibili gli ioni e gli elettroni che si trovan o in un
+--------------------------------------------------
+CHUNK #19
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 447
+TEXT: gli ioni e gli elettroni che si trovan o in un ambiente. Esso ` e basato sopra la propriet` a dei corpuscoli elettrizzati, di servire da nuclei di condensazione del vapore acqueo. L’apparecchio di Wilson ` e costituito da un recip iente che contiene dell’aria umida; spostando un pistone si pu` o produrre una rapida espansione dell’a ria, la quale raﬀredda ﬁno al punto che il vapore d’acqua contenuto in essa diventa soprasaturo. Se non vi fosse
+--------------------------------------------------
+CHUNK #20
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 448
+TEXT: in essa diventa soprasaturo. Se non vi fosse traccia di nuclei di condensazione nell’aria, non si avrebbe tuttavia condensazione del vapore, almen o quando si mantenga l’espansione dell’aria e il conseguente raﬀreddamento entro opportuni limiti. Ma s e nell’aria umida si trovano degli ioni, il vapore acqueo si condensa intorno ad essi per modo che att orno ad ogni ione viene a formarsi una gocciolina d’acqua che lo rende visibile. Una delle pi`
+--------------------------------------------------
+CHUNK #21
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 448
+TEXT: d’acqua che lo rende visibile. Una delle pi` u note applicazioni di questo metodo di Wilson si ha nella o sservazione delle traiettorie delle particelle α. Quanto una particella α viene proiettata con grandissima velocit` a attraverso all’aria da una sostanza radioattiva, essa spezza le molecole che incontra s ul suo cammino, lasciando sul suo percorso un grande numero di ioni, residuo delle molecole spezzate. Poniamo entro una camera di Wilson
+--------------------------------------------------
+CHUNK #22
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 445
+TEXT: spezzate. Poniamo entro una camera di Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α. Supponiamo poi di produrre l’espansione dell’aria umida della camera, u n momento dopo che essa ` e stata traversata da una particella. Il vapore acqueo si condenser` a a llora sugli ioni restati lungo la traiettoria della particella α, per modo che lungo di essa si verr` a a formare una serie di
+--------------------------------------------------
+CHUNK #23
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 178
+TEXT: lungo di essa si verr` a a formare una serie di goccio line di nebbia bene visibili, specialmente se illuminate fortemente di traverso. Con lo stes so metodo si possono rendere 2
+--------------------------------------------------
+CHUNK #24
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 442
+TEXT: visibili anche le traiettorie degli elettroni, bench´ e la loro osservazio ne sia di solito un po’ meno precisa, poich´ e gli elettroni producono sul loro passaggio un numero di ion i notevolmente minore delle particelle α. Il metodo della nebbia per la osservazione delle traiettorie delle partic elle α ` e stato elaborato specialmente nella scuola di Rutherford a Cambridge e ha portato a risult ati di eccezionale interesse. Uno dei pi` u
+--------------------------------------------------
+CHUNK #25
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 443
+TEXT: ati di eccezionale interesse. Uno dei pi` u importanti consiste nell’osservazione della cos ` ı detta dis integrazione artiﬁciale dei nuclei di certi atomi. Quando una particella α urta contro il nucleo di un atomo, pu` o accadere che essa lo spezz i strappandone un protone, il quale non ` e altro che un nucleo di idrogeno; la particella urtante pu` o rimbalzare via, oppure restare aggregata al nucleo urtato. Cos ` ı per es. s upponiamo di
+--------------------------------------------------
+
+
+
+
+
+
+CHUNK #37
+PAGES: 1 → 2
+PARAGRAPH: 0
+CHUNK LEN: 448
+TEXT: da un punto della traiettoria del quanto diﬀuso. Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo descritto. Il risultato di questa esperienza si accorda perfettamente con le previsioni della teoria dei quanti di luce. Essa fu una delle pi` u tipiche esperienze che servirono a precis are il contrasto tra questa teoria e quella ondulatoria; contrasto che ha
+--------------------------------------------------
+CHUNK #38
+PAGES: 1 → 2
+PARAGRAPH: 0
+CHUNK LEN: 113
+TEXT: teoria e quella ondulatoria; contrasto che ha oggi trovato la sua soluzione n ella nuova meccanica quantistica. 3
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 449
+TEXT: * * * Ho cercato, con questi pochi esempi, di illustrare l’importanza che hanno avuto le esperienze sui fenomeni elementari nello sviluppo della ﬁsica moderna. Molto per` o c i si pu` o ancora attendere da esperienze di questo tipo per chiarire quei problemi, la cui risoluzione c ostituir` a il compito della ﬁsica di domani. Tra questi forse il pi` u importante ` e quello della causalit` a . Nella ﬁsica dei fenomeni macroscopici, tutti gli stati
