@@ -1,0 +1,479 @@
+benissimo chat, ora ci sono 52 chunks a differenza dei 4 di prima. questo e' il log dei chunks che passiamo alla funzione semantic_chunk_paragraphs:
+
+clean_paragraph_docs = merge_broken_sentences(clean_paragraph_docs)         
+   
+clean_paragraph_docs = pre_merge_small_paragraphs(  
+        clean_paragraph_docs, 
+        min_chars=130, 
+        max_chars=600 
+        )
+ print('clean_paragraph_docs =',clean_paragraph_docs):
+
+(questi sono i log che ho messo nella funione pre_merge_small_paragraphs cosi': 
+if text_len < min_chars:
+            print('pre_merge_small_paragraphs hit')
+            print('small text to merge =', doc.page_content)
+come vedi ci sono 4 "small text to merge" quando invochiamo "pre_merge_small_paragraphs":
+print output:
+pre_merge_small_paragraphs hit
+small text to merge = Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α.
+pre_merge_small_paragraphs hit
+small text to merge = Compton e Simon col metodo seguente.
+pre_merge_small_paragraphs hit
+small text to merge = * * *
+pre_merge_small_paragraphs hit
+small text to merge = 4 )
+
+Qui' c'e' l'output di print('clean_paragraph_docs =',clean_paragraph_docs):
+
+
+clean_paragraph_docs = [Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='arXiv:2308.03160v1  [physics.hist-ph]  6 Aug 2023\nEnrico Fermi: a forgotten article written for Italian teach ers\nEmanuele Goldoni, Ledo Stefanini\nAccademia Nazionale Virgiliana\nMantova, Italy\nAugust 8, 2023\nAbstract'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='In 1929, Enrico Fermi wrote “Problemi attuali della ﬁsica” ( “Contemporary Problems of Physics”), a short article in Italian published in the magazine “Annali dell’istruzione media”. The magazine was sponsored by the Italian Ministry of Schooling and Educa tion, and it was addressed to teachers and principals of middle and high schools. This short text wr itten by Fermi had been forgotten for a long time. However, in recent years it has been a long time. However, in recent years it has been republis hed in Italy; moreover, the “Annali dell’istruzione media” have been digitized and made freely available online. It is unclear why Fermi wrote an article of a clearly divulgative nature for a non-te chnical journal, but is still interesting to to read his words and appreciate his skills as a great scien tiﬁc communicator. In this work we include the transcription of the original article include the transcription of the original article in Italia n, and we also propose an English translation to make the text available world-wide and accessible to a bro ader public.'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='Introduction\nMost of the scientiﬁc papers written by Enrico Fermi are contained in “Enrico Fermi: Collected Papers”\n[1], a collection edited by some of his colleagues and friends in 1962, jus t a few years after his death.'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='Almost all of his papers which are not included in this collection are eithe r merely summaries of articles already published elsewhere or accounts of Fermi’s lectures, somet imes as transcribed by others. However, the bibliography of [1] mentions the article “Problemi attuali della ﬁsic a” ( “Contemporary Problems of'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='Physics [2] without including it. This work is a short text in Italian written by the young Fermi and published in 1929. What makes it most interesting is its publication in “An nali dell’istruzione media” [3]'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='– a journal sponsored by the Italian Ministry of Schooling and Educa tion. The magazine was addressed to teachers and principals of middle and high schools; its aim was to pre sent news and reﬂections on the school system, at a time when fascism had not yet been consolid ated as a regime. This journal also included articles on the current problems in the relevant disciplines, in cluding sciences.'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='The historical context of the Italian school system at the time mak es it more interesting the presence of Fermi’s article into this journal. By 1923 the Gentile’s school refor m had come into eﬀect in Italy.'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='This reform gave primacy to humanities subjects: philosophy was to be at the center of the whole school education. Hence, the Classical lyceum (“Ginnasio”) was co nsidered the only school capable of guaranteeing an adequate preparation to the middle and ruling class es. Paradoxically, scientiﬁc culture was penalized in a society that was just coming out of a war and where science and technology played a key role on the economic and military played a key role on the economic and military fronts. In 1927, the great ma thematician Federigo Enriques wrote an article on the teaching of Mathematics and Physics in the Ge ntile reform [4], noting how the curricula were insuﬃcient to the educational needs – in the Ginnasio t here was only one hour per week devoted to calculus exercises. Enriques closed the same article ask ing to give the mathematical and physical disciplines “the place mathematical and physical disciplines “the place they deserve in humanistic education, that is to say increasing the number of chairs, and of teaching hours”.'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='Never subsequently republished after his death, Enrico Fermi’s sho rt article “Problemi attuali della\nﬁsica” had long been forgotten. However, in recent years the art icle was included in [5]; moreover, the\nNational Central Library in Rome began a digitization eﬀort of its colle ctions and the issues of “Annali dell’istruzione media” are now freely available online [6].'), Document(metadata={'page': 0, 'page_start': 0, 'page_end': 0, 'paragraph_index': 0}, page_content='We do not know why Fermi wrote an article of a clearly divulgative natu re for a non-technical journal for teachers and principals, while he was engaged at that very time, jointly with Corbino, in transforming the Via Panisperna Institute into a world-class state-of-the-art center. Unfortunately, there is no mention of this article in Fermi’s biographies [7, 8].\n1'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='For sure, in those years Fermi was well aware of what was happenin g within the Italian school. In fact, in 1929 he published for Zanichelli a physics book for high schoo ls [9] in order to increase his income and supplement his modest salary as a professor of theoretical ph ysics at the University of Rome. It is possible that Fermi simply wanted to stimulate teachers, largely un aware of the emerging quantum theory, and to raise the level of quantum theory, and to raise the level of physics teaching in schools reviving interest in the subject.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Whatever Fermi’s real reasons for writing this article were, it is still in teresting to be able to read again his words and appreciate his skills as a great popularizer. Indee d, the text clearly shows his ability to render even very diﬃcult concepts without making them seem so, lightening the theoretical treatment with frequent references to experimental activities.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='In this work we include the transcription of the original article in Italia n, and we also propose an English translation. We are aware that translating a work written by Fermi about a century ago could seem inappropriate, especially considering his well-known conce rn for the precise expression. Our decision was only motivated by the desire to make the text available wo rld-wide and accessible to a broader public. Thus, we have tried to keep to a broader public. Thus, we have tried to keep the style and the vocab ulary as faithful to the original text as possible, although some words and sentences has been adapted to sound more familiar to a reader of the 21st century.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Problemi attuali della ﬁsica\nEnrico Fermi\nLa ﬁsica degli ultimi decenni, sia nel campo sperimentale che in quello te orico, ` e stata caratterizzata da un progressivo aumento dell’interesse per i fenomeni atomici.\nTutti i fenomeni accessibili all’osservazione diretta, e gran parte di quelli osservabili con mezzi di precisione non grandissima, non sono altro che il risultato di un nume ro enorme di processi elementari.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Cos ` ı la pressione, esercitata da un gas sopra una parete, non ` e altro che il risultato di innumerevoli urti delle molecole del gas contro la parete; similmente quando la luce viene a ssorbita da una sostanza, si ha un grande numero di atti di assorbimento da parte dei singoli a tomi. `E evidente l’importanza dello studio di questi fenomeni elementari, che formano la chiave per co mprendere i fenomeni pi` u complessi.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Naturalmente per` o il loro studio sperimentale ` e molto diﬃcile, poich´e l’elemento su cui si opera ` e l’atomo, oppure la molecola, entrambi di dimensioni estremamente piccole.\nCercheremo qui di passare in rapida rassegna alcune delle principali esperienze in cui si arriva all’osservazione diretta di uno di questi fenomeni elementari.\n* * *'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='* * *\nUna delle prime osservazioni ` e stata quella dei moti Browniani delle p articelle colloidali, visibili direttamente per mezzo dell’ultra-microscopio; il movimento delle par ticelle ` e dovuto, come ` e ben noto, agli urti che esse ricevono da parte delle molecole del liquido in cui son o immerse, le quali sono in movimento per eﬀetto dell’agitazione termica.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Il pi` u potente metodo per l’investigazione dei fenomeni elementa ri ` e quello della nebbia di Wilson, che permette di rendere visibili gli ioni e gli elettroni che si trovan o in un ambiente.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Esso ` e basato sopra la propriet` a dei corpuscoli elettrizzati, di servire da nuclei di condensazione del vapore acqueo. L’apparecchio di Wilson ` e costituito da un recip iente che contiene dell’aria umida; spostando un pistone si pu` o produrre una rapida espansione dell’a ria, la quale raﬀredda ﬁno al punto che il vapore d’acqua contenuto in essa diventa soprasaturo. Se non vi fosse traccia di nuclei di condensazione nell’aria, non si di nuclei di condensazione nell’aria, non si avrebbe tuttavia condensazione del vapore, almen o quando si mantenga l’espansione dell’aria e il conseguente raﬀreddamento entro opportuni limiti. Ma s e nell’aria umida si trovano degli ioni, il vapore acqueo si condensa intorno ad essi per modo che att orno ad ogni ione viene a formarsi una gocciolina d’acqua che lo rende visibile.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Una delle pi` u note applicazioni di questo metodo di Wilson si ha nella o sservazione delle traiettorie delle particelle α. Quanto una particella α viene proiettata con grandissima velocit` a attraverso all’aria da una sostanza radioattiva, essa spezza le molecole che incontra s ul suo cammino, lasciando sul suo percorso un grande numero di ioni, residuo delle molecole spezzate. Poniamo entro una camera di Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 2, 'paragraph_index': 0}, page_content='Supponiamo poi di produrre l’espansione dell’aria umida della camera, u n momento dopo che essa ` e stata traversata da una particella. Il vapore acqueo si condenser` a a llora sugli ioni restati lungo la traiettoria della particella α, per modo che lungo di essa si verr` a a formare una serie di goccio line di nebbia bene visibili, specialmente se illuminate fortemente di traverso. Con lo stes so metodo si possono rendere\n2 visibili anche le traiettorie degli elettroni, bench´ e la loro osservazio ne sia di solito un po’ meno precisa, poich´ e gli elettroni producono sul loro passaggio un numero di ion i notevolmente minore delle particelle\nα.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Il metodo della nebbia per la osservazione delle traiettorie delle partic elle α ` e stato elaborato spe- cialmente nella scuola di Rutherford a Cambridge e ha portato a risult ati di eccezionale interesse. Uno dei pi` u importanti consiste nell’osservazione della cos ` ı detta dis integrazione artiﬁciale dei nuclei di certi atomi. Quando una particella α urta contro il nucleo di un atomo, pu` o accadere che essa lo spezz i strap- pandone un o accadere che essa lo spezz i strap- pandone un protone, il quale non ` e altro che un nucleo di idrogeno; la particella urtante pu` o rimbalzare via, oppure restare aggregata al nucleo urtato. Cos ` ı per es. s upponiamo di bombardare dell’azoto con delle particelle α molto veloci. L’azoto ha numero atomico 7, cio` e la carica elettrica del suo nucleo ` e sette volte la carica elettrica elementare del protone. Se una part icella α urta un del protone. Se una part icella α urta un nucleo di azoto e ne distacca un protone, la carica del nucleo residuo resta 6; suppone ndo che la particella α urtante (di carica 2) resti aggregata al nucleo, la carica elettrica del comples so che ne risulta sar` a 8. Ora l’elemento chimico il cui nucleo ha carica 8 ` e l’ossigeno; come risultato del proce sso di urto si verr` a quindi ad avere produzione di ossigeno. Disgraziatamente la probabilit` a di ossigeno. Disgraziatamente la probabilit` a che una pa rticella α, urtando un nucleo di azoto, lo spezzi nel modo che ` e stato descritto, ` e estremamente picco la, per modo che, per quanto intensamente si bombardi l’azoto con le particelle α, la quantit` a di ossigeno prodotta resta sempre cos ` ı piccola, da non essere nemmeno lontanamente osservabile con metodi chimici.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Per scoprire la formazione dell’ossigeno si pu` o invece ricorrere app unto al metodo di Wilson. Occorre perci` o esaminare qualche decina di migliaia di fotograﬁe di traietto rie di particelle α nell’azoto; si riesce cos ` ı a scoprire qualche traiettoria che, ad un certo punto, si bif orca. Uno dei due rami ` e la traccia del passaggio del protone strappato, per eﬀetto dell’urto, dal nucle o di azoto; l’altro ramo, assai pi` u corto,'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='` e invece prodotto dal passaggio del nucleo residuo, al quale si ` e aggregata la particella α urtante. Se dopo l’urto la particella α fosse invece rimasta libera, si sarebbe osservata una traccia che , al momento dell’urto, si doveva dividere in tre rami.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Anche fuori del campo della radioattivit` a sono state fatte delle ap plicazioni del metodo di Wilson di grandissimo interesse. Una delle pi` u signiﬁcative ` e l’esperienza di C ompton e Simon che illustra in modo notevolissimo il meccanismo dell’eﬀetto Compton. Secondo la teoria de i quanti di luce, il processo della diﬀusione dei raggi X per parte degli atomi (eﬀetto Compton) ` e il seguente: Consideriamo un quanto di luce di frequenza ν che'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Consideriamo un quanto di luce di frequenza ν che urti contro un elettrone. Esso verr` a diﬀuso, cambiando cos ` ı di direzione; siccome per` o un quanto di luce, oltre alla sua energia hν, ha anche una quantit` a di moto, l’elettrone che ha prodotto il cambiamento di direzione del quanto, ricever` a un impu lso, eguale alla diﬀerenza vettoriale delle quantit` a dei moto del quanto di luce, prima e dopo l’urto. L’elet trone acquista cos ` ı, in e dopo l’urto. L’elet trone acquista cos ` ı, in seguito all’urto, una certa velocit` a, e l’energia cinetica corrispondente vien e fornita a spese del quanto di luce, la cui energia diminuisce per ci` o nell’urto. Siccome poi la frequenza di un quanto ` e proporzionale alla sua energia, la frequenza dei raggi diﬀusi risulter` a un po’ minore della frequenza di quelli incidenti.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='L’esperienza veriﬁca in realt` a questa diminuzione della frequenza, e la diminuzione osservata corrisponde anche molto bene al calcolo teorico. Aveva tuttavia interesse la ver iﬁca diretta del meccanismo che abbiamo descritto; si trattava cio` e di far vedere che eﬀettivam ente tutte le volte che un quanto di luce viene diﬀuso in una data direzione, viene in corrispondenza proiettat o un elettrone in una direzione che pu` o facilmente elettrone in una direzione che pu` o facilmente prevedersi calcolando, per mezzo dei principi di conservazione dell’energia, e della quantit` a di moto, il processo dell’urto tra il quanto di luce e l’elettr one. Questa veriﬁca ` e stata fatta da'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Compton e Simon col metodo seguente.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='In una camera di Wilson essi mandarono un sottile fascetto di ragg i X e fecero poi qualche migliaio di fotograﬁe delle tracce di nebbia che si formavano nella camera, producendo delle espansioni. Ogni volta venivano prese contemporaneamente due fotograﬁe in direz ioni perpendicolari, in modo da poter determinare stereoscopicamente la direzione delle tracce. In alcun e delle fotograﬁe si osservano delle tracce dovute a un elettrone che ` e delle tracce dovute a un elettrone che ` e rimbalzato per eﬀetto della diﬀu sione di un quanto. La direzione della porzione iniziale della traccia ci d` a la direzione in cui ` e stato proie ttato l’elettrone per eﬀetto del rimbalzo; da questa si pu` o calcolare, con la teoria dell’urto, la direzio ne in cui ` e stato diﬀuso il quanto urtante. Ora accade abbastanza spesso che il quanto diﬀuso, ne ll’attraversare il gas della camera, venga ne ll’attraversare il gas della camera, venga assorbito da un atomo, e gli strappi un elettrone per eﬀetto foto elettrico. In questo caso noi vedremo sulla stessa fotograﬁa, insieme alla traccia dell’elettrone di rimbalzo, anc he un’altra traccia che incomincia da un punto della traiettoria del quanto diﬀuso. Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Il risultato di questa esperienza si accorda perfettamente con le previsioni della teoria dei quanti di luce. Essa fu una delle pi` u tipiche esperienze che servirono a precis are il contrasto tra questa teoria e quella ondulatoria; contrasto che ha oggi trovato la sua soluzione n ella nuova meccanica quantistica.\n3'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='* * *'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='Ho cercato, con questi pochi esempi, di illustrare l’importanza che hanno avuto le esperienze sui fenomeni elementari nello sviluppo della ﬁsica moderna. Molto per` o c i si pu` o ancora attendere da es- perienze di questo tipo per chiarire quei problemi, la cui risoluzione c ostituir` a il compito della ﬁsica di domani. Tra questi forse il pi` u importante ` e quello della causalit` a . Nella ﬁsica dei fenomeni macro- scopici, tutti gli stati dei fenomeni macro- scopici, tutti gli stati futuri di un sistema sottratto a qualsiasi perturbazione esterna sono determinati univocamente dalla conoscenza dello stato iniziale del sistema stesso (determinismo). Si hanno invece varie ragioni che sembrano indicare che un simile principio deterministic o non sia valido nel mondo microscopico degli atomi. L’apparente determinismo macroscopico s arebbe unicamente il risultato del fatto che, nelle unicamente il risultato del fatto che, nelle osservazioni macroscopiche, si osservano solta nto delle medie di numerosissimi fenomeni che avvengono negli atomi costituenti i diversi corpi. Non sfugg ir` a a nessuno l’enorme importanza di questa questione e il profondo mutamento che avverrebbe nelle no stre vedute sopra i fenomeni naturali, il giorno che ci si dovesse eﬀettivamente convincere che il determ inismo ﬁsico ` e soltanto una propriet` il determ inismo ﬁsico ` e soltanto una propriet` a di media, non pi` u valida quando si opera sopra un singolo atomo. `E appunto da uno studio profondo dei fenomeni elementari che si potr` a avere la risposta a questo app assionante problema; si potr` a vedere cio` e se l’apparente indeterminismo dei fenomeni elementari derivi dal f atto che si ` e omessa l’osservazione di qualche causa, oppure se esso rappresenti una delle leggi fondam entali se esso rappresenti una delle leggi fondam entali del mondo atomico.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='Contemporary Problems of Physics\nEnrico Fermi (Author), Emanuele Goldoni and Ledo Stefanini (Translators)\nThe physics of recent decades, both in the experimental and the t heoretical ﬁelds, has been characterized by a increasing interest in atomic phenomena.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='All phenomena observable directly, and most of those observable t hrough not-so-precise means, are nothing but the result of an enormous amount of elementary proce sses. Thus, the pressure exerted by a gas over a wall, is just the result of countless collisions of gas molecu les against the wall; similarly, when light is absorbed by a substance, there is a great number of ev ents of absorption by individual atoms. The importance of studying by individual atoms. The importance of studying these elementary phenomena - which are the key to understand more complex phenomena - is obvious. However, their experimental inves tigation is very diﬃcult, since one must work with either the atom or the molecule, both of which are ext remely small.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='Here, we will try to quickly review some of the main experiences in which we arrive at a direct observation of one of these elementary phenomena.\n* * *'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='* * *\nOne of the earliest observations involved the Brownian motions of co lloid particles, which are visible directly by means of an ultramicroscope. It is well known that the mo vement of the particles is due to the shocks they receive from the molecules of the liquid in which they a re immersed, which are in motion due to thermal agitation.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='The most powerful method for investigating elementary phenomen a is the Wilson cloud chamber, which makes visible the ions and electrons found in an environment.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='The Wilson chamber is based on the property of electriﬁed corpuscle s, which act as condensation nuclei of water vapor. It consists of a device containing moist air – m oving a piston, we can produce a rapid expansion of the air, which cools to the point that the containe d water vapor becomes supersatu- rated. However, if there were no trace of condensation nuclei in t he air, there would be no condensation of vapor, assuming the expansion of condensation of vapor, assuming the expansion of the air and the consequent co oling are kept within suitable limits.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='On the contrary, if there are ions in the moist air, water vapor cond enses around them so that a water droplet is formed around each ion, making it visible.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='One of the best known applications of Wilson’s device is the observatio n of the trajectories of α particles. When an α particle is thrown at a very high velocity through the air by a radioact ive substance, it breaks up the molecules it encounters on its path; thus, it leaves o n its path a large number of ions, which are the residue of the broken molecules. Let’s place a small gra nule of radioactive substance within a Wilson chamber: it will substance within a Wilson chamber: it will throw α particles all around. Then, let’s suppose that we generate the expansion of the moist air of the chamber just after it has been tra versed by a particle. The water vapor will then condense on the ions left along the trajectory of the α particle: hence, a series of mist droplets will form and it will be well visible, especially when tangentially strongly illum inated. The trajectories of the strongly illum inated. The trajectories of the electrons could be made visible by the same method, although the ir observation is usually somewhat less precise, since electrons produce considerably fewer ions than α particles on their passage.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='4'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 4, 'paragraph_index': 0}, page_content='The cloud method for observing the trajectories of α particles was mostly developed by the Ruther- ford’s school in Cambridge and has led to results of exceptional inte rest. One of the most important achievements consists in the observation of the so-called artiﬁcial disintegration of the nuclei of certain atoms. When an α particle collides against the nucleus of an atom, it may happen that it b reaks it up by tearing oﬀ a proton, which is it b reaks it up by tearing oﬀ a proton, which is nothing but an hydrogen nucleus. Th en, the colliding particle might bounce away or be captured by the hit nucleus. Let’s suppose, for example, we bombard nitrogen with very fast α particles. Nitrogen has atomic number 7, that is, the electric charg e of its nucleus is seven times the elemental electric charge of the proton. If an α particle collides with a nitrogen nucleus and detaches a proton with a nitrogen nucleus and detaches a proton from it, the charge of the remaining nucleus rem ains 6. Assuming instead that the bumping α particle (of charge +2) remains aggregated to the nucleus, the ele ctrical charge of the result- ing complex will be 8. Since the chemical element whose nucleus has cha rge 8 is oxygen, the collision process will therefore produce oxygen. Unfortunately, the pro bability that an α particle, colliding with a pro bability that an α particle, colliding with a nitrogen nucleus, would break it up in the manner that has been jus t described, is extremely small – no matter how intensely one bombards nitrogen with α particles, the amount of oxygen produced will always remains so small that it is not even remotely observable by che mical methods.'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 4, 'paragraph_index': 0}, page_content='To discover the formation of oxygen, one can instead turn to Wilson ’s method. It is therefore necessary to examine a few tens of thousands photographs of trajectories of α particles inside nitrogen; one is thus able to discover a few trajectories that, at some point, bifurcate . One of the two branches is the trace of the passage of the proton, ejected by the impact from the nitrog en nucleus; the other branch, which is much shorter, is the other branch, which is much shorter, is produced instead by the passage of the recoil nu cleus, to which the impacting α particle has aggregated to. If after the collision the α particle had instead remained free, one would have observed a track which, when collision took place, should have split into three br anches.'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 4, 'paragraph_index': 0}, page_content='There have been very interesting applications of Wilson’s method bey ond radioactivity, too. One of the most signiﬁcant applications is the experience of Compton and Sim on, which remarkably illustrates the mechanism of the Compton eﬀect. According to the quantum th eory of light, the process of X-ray scattering by atoms (Compton eﬀect) is as follows: consider a quan tum of light of frequency ν colliding with an electron. The quantum will be ν colliding with an electron. The quantum will be scattered, thus changing dire ction. However, a light quantum, in addition to its energy hν, also has momentum: then, the electron that produced the chang e in direction of the quantum will receive an impulse, equal to the vector diﬀerenc e of the momentum of the light quantum before and after the collision. The electron will thus acquir e a certain velocity, as a result of the collision; the velocity, as a result of the collision; the corresponding kinetic energy is supplied at the expe nse of the quantum of light, whose energy therefore decreases in the collision. Moreover, since the f requency of a quantum is proportional to its energy, the frequency of the scattered rays will be somewh at less than the frequency of the incident ones. Experience actually conﬁrms this decrease in frequency, an d the observed decrease also in frequency, an d the observed decrease also corresponds very well to the theoretical calculation. However, there was inter est in verifying directly the mechanism we have described; that is, to show that every time a quantum of ligh t is scattered in a given direction, a corresponding electron is ejected in a predictable direction. The dir ection of the electron could be easily calculated, by means of the principles of conservation of energy means of the principles of conservation of energy an d momentum, considering the eﬀect of the collision between the quantum of light and the electron. This ve riﬁcation was done by Compton and Simon by the following method.'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 4, 'paragraph_index': 0}, page_content='In a Wilson chamber, they sent a thin beam of X-rays; then, they pr oduced expansions and took a few thousand photographs of the cloud tracks forming inside the c hamber. Each time, two photos were taken simultaneously in perpendicular directions, so that the direct ion of the tracks could be determined stereoscopically. In some of the photos, traces were observed d ue to an electron that had bounced back as a result of quantum scattering. The back as a result of quantum scattering. The direction of the initial portio n of the trace gives us the direction in which the electron was projected due to the bounce; from this, w e can calculate the direction in which the colliding quantum was diﬀused via the collision theory. It happens q uite often that the scattered quantum, in passing through the gas within the chamber, is absorbe d by an atom and removes an electron from the same atom by and removes an electron from the same atom by the photoelectric eﬀect. In this case, we will see on the same photograph the trace of the bouncing electron plus another trace beginning at a po int in the trajectory of the scattered quantum. Compton and Simon actually succeeded in observing pairs o f tracks, arranged as we have just described, in a good number of photographs.'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 4, 'paragraph_index': 0}, page_content='The result of this experience agrees perfectly with the predictions of the quantum theory of light. It was one of the most typical experiences that served to clarify the contrast between this theory and the wave theory; a contrast that has now found its solution in the new q uantum mechanics.\n* * *'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 5, 'paragraph_index': 0}, page_content='* * *\nWith these few examples, I tried to illustrate the importance that ex periments on elementary phe- nomena have had in the development of modern physics. However, m uch more can still be expected\n5 from such experiences in order to clarify those problems whose res olution will be the task of tomorrow’s physics. Among these problems, perhaps the most important is tha t of causality. In the physics of macro- scopic phenomena, all future states of a system removed from an y external perturbation are uniquely determined by knowledge of the system’s initial state (determinism) . There are, however, various rea- sons that seem to indicate that various rea- sons that seem to indicate that such a deterministic principle does no t hold in the microscopic world of atoms. The apparent macroscopic determinism would be solely the re sult of the fact that, in macroscopic observations, we observe only averages of many phenomena occu rring in the constituent atoms of bodies.'), Document(metadata={'page': 5, 'page_start': 5, 'page_end': 5, 'paragraph_index': 0}, page_content='The enormous importance of this question is evident, and a profoun d change would take place in our view over natural phenomena the day that we should actually be con vinced that physical determinism is only a property of averages, no longer valid when operating on a sin gle atom. It is precisely from a thorough study of elementary phenomena that the answer to this exciting problem may come; that is, we will be able to verify if the apparent is, we will be able to verify if the apparent indeterminism of elementary ph enomena is due to the missing observation of some causes or it represents one of the fundamen tal laws of the atomic world.'), Document(metadata={'page': 5, 'page_start': 5, 'page_end': 5, 'paragraph_index': 0}, page_content='Acknowledgements\nWe would like to thank Davide Cavalca and Alessandro Vezzani for givin g the paper a critical reading and for providing several helpful comments.\nReferences\n[1] E. Amaldi, H. L. Anderson, E. Persico, E. Segr´ e, and A. Watten berg, eds., Enrico Fermi: Collected\nPapers, 1921–1938, vol. 1 of Collected Papers: (Note E Memorie) . Accademia Nazionale dei Lincei\n& University of Chicago Press, 1962.'), Document(metadata={'page': 5, 'page_start': 5, 'page_end': 5, 'paragraph_index': 0}, page_content='& University of Chicago Press, 1962.\n[2] E. Fermi, “Problemi attuali della ﬁsica.,” in Annali delle scuole medie , vol. 5, pp. 424–428, F. Le\nMonnier, 1928.\n[3] Annali della istruzione media , Felice Le Monnier, Firenze, 1926–1932.\n[4] F. Enriques, “La riforma Gentile e l’insegnamento della Matematica e della Fisica nella Scuola media”\nCultura fascista, vol. 2, n. 8, pp. 115–117, 1927'), Document(metadata={'page': 5, 'page_start': 5, 'page_end': 5, 'paragraph_index': 0}, page_content='Cultura fascista, vol. 2, n. 8, pp. 115–117, 1927\n[5] V. Barone, ed., Enrico Fermi. Atomi, nuclei e particelle. Scritti divulgat ivi ed espositiagraph_index': 0}, page_content='Cultura fascista, vol. 2, n. 8, pp. 115–117, 1927\n[5] V. Barone, ed., Enrico Fermi. Atomi, nuclei e particelle. Scritti divulgat ivi ed espositivi 1923-1952 ,\nBollati Boringhieri, Torino, 2009.\n[6] Biblioteca Nazionale Centrale di Roma, “Annali della istruzione media ”, 1929. Online: http://digitale.bnc.roma.sbn.it/tecadigitale/giornale/TO00175190/1929/unico'), Document(metadata={'page': 5, 'page_start': 5, 'page_end': 5, 'paragraph_index': 0}, page_content='[7] L. Fermi, Atoms in the family; my life with Enrico Fermi . University of Chicago Press, 1954.\n[8] D. N. Schwartz, The Last Man Who Knew Everything: The Life and Times of Enrico Fermi, Father of the Nuclear Age . Basic Books, 2017.\n[9] E.new Everything: The Life and Times of Enrico Fermi, Father of the Nuclear Age . Basic Books, 2017.\n[9] E. Fermi, Fisica ad uso dei licei , vols. I & II. N. Zanichelli, 1929.\n6')]
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+new Everything: The Life and Times of Enrico Fermi, Father of the Nuclear Age . Basic Books, 2017.\n[9] E. Fermi, Fisica ad uso dei licei , vols. I & II. N. Zanichelli, 1929.\n6')]
+new Everything: The Life and Times of Enrico Fermi, Father of the Nuclear Age . Basic Books, 2017.\n[9] E. Fermi, Fisica ad uso dei licei , vols. I & II. N. Zanichelli, 1929.\n6')]
+
+questo chunks (che chiameremo 'pre semantic_chunks')  come sai bene vengono passati alla funzione:
+ 
+semantic_chunks = semantic_chunk_paragraphs( 
+            paragraph_docs=clean_paragraph_docs, 
+                
+            embeddings_model=embeddings_model, 
+            sim_threshold=0.65, # sweet spot per fare merge dei chunks
+            max_chars = 1200 
+            )
+(
+al momento non sto' usando la funzione  
+semantic_chunks = post_merge_small_chunks(  
+             semantic_chunks, 
+             min_chars=250,   
+             max_chars=1200  
+             )
+)
+
+e questo e' l'output dei chunks che chiameremo "post semantic_chunks" nei print:
+
+for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
+             print(f"CHUNK #{i}")
+             print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
+             print("PARAGRAPH:", c.metadata.get("paragraph_index"))
+             print("CHUNK LEN:", len(c.page_content))
+             print("TEXT:", c.page_content)
+             print("-" * 50)
+             if len(c.page_content) < 200:
+                 print("⚠️ SMALL CHUNK DETECTED")(log di print(f"SIM {i-1}->{i}: {sim:.3f}") dentro la fun 
+
+(output dei print):
+semantic_chunk_paragraphs )
+SIM 0->1: 0.693
+SIM 1->2: 0.651
+SIM 2->3: 0.719
+SIM 3->4: 0.651
+SIM 4->5: 0.435
+SIM 5->6: 0.557
+SIM 6->7: 0.558
+SIM 7->8: 0.414
+SIM 8->9: 0.681
+SIM 9->10: 0.742
+SIM 10->11: 0.603
+SIM 11->12: 0.672
+SIM 12->13: 0.562
+SIM 13->14: 0.454
+SIM 14->15: 0.589
+SIM 15->16: 0.569
+SIM 16->17: 0.479
+SIM 17->18: 0.535
+SIM 18->19: 0.568
+SIM 19->20: 0.542
+SIM 20->21: 0.646
+SIM 21->22: 0.738
+SIM 22->23: 0.551
+SIM 23->24: 0.429
+SIM 24->25: 0.533
+SIM 25->26: 0.692
+SIM 26->27: 0.321
+SIM 27->28: 0.428
+SIM 28->29: 0.576
+SIM 29->30: 0.102
+SIM 30->31: 0.131
+SIM 31->32: 0.503
+SIM 32->33: 0.409
+SIM 33->34: 0.561
+SIM 34->35: 0.458
+SIM 35->36: 0.437
+SIM 36->37: 0.509
+SIM 37->38: 0.507
+SIM 38->39: 0.464
+SIM 39->40: 0.104
+SIM 40->41: 0.152
+SIM 41->42: 0.774
+SIM 42->43: 0.477
+SIM 43->44: 0.725
+SIM 44->45: 0.536
+SIM 45->46: 0.502
+SIM 46->47: 0.719
+SIM 47->48: 0.298
+SIM 48->49: 0.569
+SIM 49->50: 0.760
+SIM 50->51: 0.746
+CHUNK #0
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 216
+TEXT: arXiv:2308.03160v1  [physics.hist-ph]  6 Aug 2023
+Enrico Fermi: a forgotten article written for Italian teach ers
+Emanuele Goldoni, Ledo Stefanini
+Accademia Nazionale Virgiliana
+Mantova, Italy
+August 8, 2023
+Abstract
+--------------------------------------------------
+CHUNK #1
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 1075
+TEXT: In 1929, Enrico Fermi wrote “Problemi attuali della ﬁsica” ( “Contemporary Problems of Physics”), a short article in Italian published in the magazine “Annali dell’istruzione media”. The magazine was sponsored by the Italian Ministry of Schooling and Educa tion, and it was addressed to teachers and principals of middle and high schools. This short text wr itten by Fermi had been forgotten for a long time. However, in recent years it has been a long time. However, in recent years it has been republis hed in Italy; moreover, the “Annali dell’istruzione media” have been digitized and made freely available online. It is unclear why Fermi wrote an article of a clearly divulgative nature for a non-te chnical journal, but is still interesting to to read his words and appreciate his skills as a great scien tiﬁc communicator. In this work we include the transcription of the original article include the transcription of the original article in Italia n, and we also propose an English translation to make the text available world-wide and accessible to a bro ader public.
+--------------------------------------------------
+CHUNK #2
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 752
+TEXT: Introduction
+Most of the scientiﬁc papers written by Enrico Fermi are contained in “Enrico Fermi: Collected Papers”    
+[1], a collection edited by some of his colleagues and friends in 1962, jus t a few years after his death. Almost all of his papers which are not included in this collection are eithe r merely summaries of articles already published elsewhere or accounts of Fermi’s lectures, somet imes as transcribed by others. However, the bibliography of [1] mentions the article “Problemi attuali della ﬁsic a” ( “Contemporary Problems of Physics [2] without including it. This work is a short text in Italian written by the young Fermi and published in 1929. What makes it most interesting is its publication in “An nali dell’istruzione media” [3]
+--------------------------------------------------
+CHUNK #3
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 399
+TEXT: – a journal sponsored by the Italian Ministry of Schooling and Educa tion. The magazine was addressed to teachers and principals of middle and high schools; its aim was to pre sent news and reﬂections on the school system, at a time when fascism had not yet been consolid ated as a regime. This journal also included articles on the current problems in the relevant disciplines, in cluding sciences.
+--------------------------------------------------
+CHUNK #4
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 208
+TEXT: The historical context of the Italian school system at the time mak es it more interesting the presence of Fermi’s article into this journal. By 1923 the Gentile’s school refor m had come into eﬀect in Italy.
+--------------------------------------------------
+CHUNK #5
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 1049
+TEXT: This reform gave primacy to humanities subjects: philosophy was to be at the center of the whole school education. Hence, the Classical lyceum (“Ginnasio”) was co nsidered the only school capable of guaranteeing an adequate preparation to the middle and ruling class es. Paradoxically, scientiﬁc culture was penalized in a society that was just coming out of a war and where science and technology played a key role on the economic and military played a key role on the economic and military fronts. In 1927, the great ma thematician Federigo Enriques wrote an article on the teaching of Mathematics and Physics in the Ge ntile reform [4], noting how the curricula were insuﬃcient to the educational needs – in the Ginnasio t here was only one hour per week devoted to calculus exercises. Enriques closed the same article ask ing to give the mathematical and physical disciplines “the place mathematical and physical disciplines “the place they deserve in humanistic education, that is to say increasing the number of chairs, and of teaching hours”.     
+--------------------------------------------------
+CHUNK #6
+PAGES: 0 → 0
+PARAGRAPH: 0
+CHUNK LEN: 739
+TEXT: Never subsequently republished after his death, Enrico Fermi’s sho rt article “Problemi attuali della
+ﬁsica” had long been forgotten. However, in recent years the art icle was included in [5]; moreover, the  
+National Central Library in Rome began a digitization eﬀort of its colle ctions and the issues of “Annali dell’istruzione media” are now freely available online [6]. We do not know why Fermi wrote an article of a clearly divulgative natu re for a non-technical journal for teachers and principals, while he was engaged at that very time, jointly with Corbino, in transforming the Via Panisperna Institute into a world-class state-of-the-art center. Unfortunately, there is no mention of this article in Fermi’s biographies [7, 8].
+1
+--------------------------------------------------
+CHUNK #7
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 550
+TEXT: For sure, in those years Fermi was well aware of what was happenin g within the Italian school. In fact, in 1929 he published for Zanichelli a physics book for high schoo ls [9] in order to increase his income and supplement his modest salary as a professor of theoretical ph ysics at the University of Rome. It is possible that Fermi simply wanted to stimulate teachers, largely un aware of the emerging quantum theory, and to raise the level of quantum theory, and to raise the level of physics teaching in schools reviving interest in the subject.
+--------------------------------------------------
+CHUNK #8
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 1049
+TEXT: Whatever Fermi’s real reasons for writing this article were, it is still in teresting to be able to read again his words and appreciate his skills as a great popularizer. Indee d, the text clearly shows his ability to render even very diﬃcult concepts without making them seem so, lightening the theoretical treatment with frequent references to experimental activities. In this work we include the transcription of the original article in Italia n, and we also propose an English translation. We are aware that translating a work written by Fermi about a century ago could seem inappropriate, especially considering his well-known conce rn for the precise expression. Our decision was only motivated by the desire to make the text available wo rld-wide and accessible to a broader public. Thus, we have tried to keep to a broader public. Thus, we have tried to keep the style and the vocab ulary as faithful to the original text as possible, although some words and sentences has been adapted to sound more familiar to a reader of the 21st century.     
+--------------------------------------------------
+CHUNK #9
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 421
+TEXT: Problemi attuali della ﬁsica
+Enrico Fermi
+La ﬁsica degli ultimi decenni, sia nel campo sperimentale che in quello te orico, ` e stata caratterizzata da un progressivo aumento dell’interesse per i fenomeni atomici.
+Tutti i fenomeni accessibili all’osservazione diretta, e gran parte di quelli osservabili con mezzi di precisione non grandissima, non sono altro che il risultato di un nume ro enorme di processi elementari.     
+--------------------------------------------------
+CHUNK #10
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 425
+TEXT: Cos ` ı la pressione, esercitata da un gas sopra una parete, non ` e altro che il risultato di innumerevoli urti delle molecole del gas contro la parete; similmente quando la luce viene a ssorbita da una sostanza, si ha un grande numero di atti di assorbimento da parte dei singoli a tomi. `E evidente l’importanza dello studio di questi fenomeni elementari, che formano la chiave per co mprendere i fenomeni pi` u complessi.
+--------------------------------------------------
+CHUNK #11
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 345
+TEXT: Naturalmente per` o il loro studio sperimentale ` e molto diﬃcile, poich´e l’elemento su cui si opera ` e l’atomo, oppure la molecola, entrambi di dimensioni estremamente piccole.
+Cercheremo qui di passare in rapida rassegna alcune delle principali esperienze in cui si arriva all’osservazione diretta di uno di questi fenomeni elementari.
+* * *
+--------------------------------------------------
+CHUNK #12
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 367
+TEXT: * * *
+Una delle prime osservazioni ` e stata quella dei moti Browniani delle p articelle colloidali, visibili direttamente per mezzo dell’ultra-microscopio; il movimento delle par ticelle ` e dovuto, come ` e ben noto, agli urti che esse ricevono da parte delle molecole del liquido in cui son o immerse, le quali sono in movimento per eﬀetto dell’agitazione termica.
+--------------------------------------------------
+CHUNK #13
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 194
+TEXT: Il pi` u potente metodo per l’investigazione dei fenomeni elementa ri ` e quello della nebbia di Wilson, che permette di rendere visibili gli ioni e gli elettroni che si trovan o in un ambiente.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+CHUNK #14
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 825
+TEXT: Esso ` e basato sopra la propriet` a dei corpuscoli elettrizzati, di servire da nuclei di condensazione del vapore acqueo. L’apparecchio di Wilson ` e costituito da un recip iente che contiene dell’aria umida; spostando un pistone si pu` o produrre una rapida espansione dell’a ria, la quale raﬀredda ﬁno al punto che il vapore d’acqua contenuto in essa diventa soprasaturo. Se non vi fosse traccia di nuclei di condensazione nell’aria, non si di nuclei di condensazione nell’aria, non si avrebbe tuttavia condensazione del vapore, almen o quando si mantenga l’espansione dell’aria e il conseguente raﬀreddamento entro opportuni limiti. Ma s e nell’aria umida si trovano degli ioni, il vapore acqueo si condensa intorno ad essi per modo che att orno ad ogni ione viene a formarsi una gocciolina d’acqua che lo rende visibile.
+--------------------------------------------------
+CHUNK #15
+PAGES: 1 → 1
+PARAGRAPH: 0
+CHUNK LEN: 520
+TEXT: Una delle pi` u note applicazioni di questo metodo di Wilson si ha nella o sservazione delle traiettorie delle particelle α. Quanto una particella α viene proiettata con grandissima velocit` a attraverso all’aria da una sostanza radioattiva, essa spezza le molecole che incontra s ul suo cammino, lasciando sul suo percorso un grande numero di ioni, residuo delle molecole spezzate. Poniamo entro una camera di Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α.    
+--------------------------------------------------
+CHUNK #16
+PAGES: 1 → 2
+PARAGRAPH: 0
+CHUNK LEN: 652
+TEXT: Supponiamo poi di produrre l’espansione dell’aria umida della camera, u n momento dopo che essa ` e stata traversata da una particella. Il vapore acqueo si condenser` a a llora sugli ioni restati lungo la traiettoria della particella α, per modo che lungo di essa si verr` a a formare una serie di goccio line di nebbia bene visibili, specialmente se illuminate fortemente di traverso. Con lo stes so metodo si possono rendere
+2 visibili anche le traiettorie degli elettroni, bench´ e la loro osservazio ne sia di solito un po’ meno precisa, poich´ e gli elettroni producono sul loro passaggio un numero di ion i notevolmente minore delle particelle
+α.
+--------------------------------------------------
+CHUNK #17
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 447
+TEXT: Il metodo della nebbia per la osservazione delle traiettorie delle partic elle α ` e stato elaborato spe- cialmente nella scuola di Rutherford a Cambridge e ha portato a risult ati di eccezionale interesse. Uno dei pi` u importanti consiste nell’osservazione della cos ` ı detta dis integrazione artiﬁciale dei nuclei di certi atomi. Quando una particella α urta contro il nucleo di un atomo, pu` o accadere che essa lo spezz i strap- pandone un o
+--------------------------------------------------
+CHUNK #18
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 449
+TEXT: accadere che essa lo spezz i strap- pandone un o accadere che essa lo spezz i strap- pandone un protone, il quale non ` e altro che un nucleo di idrogeno; la particella urtante pu` o rimbalzare via, oppure restare aggregata al nucleo urtato. Cos ` ı per es. s upponiamo di bombardare dell’azoto con delle particelle α molto veloci. L’azoto ha numero atomico 7, cio` e la carica elettrica del suo nucleo ` e sette volte la carica elettrica elementare
+--------------------------------------------------
+CHUNK #19
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 448
+TEXT: ` e sette volte la carica elettrica elementare del protone. Se una part icella α urta un del protone. Se una part icella α urta un nucleo di azoto e ne distacca un protone, la carica del nucleo residuo resta 6; suppone ndo che la particella α urtante (di carica 2) resti aggregata al nucleo, la carica elettrica del comples so che ne risulta sar` a 8. Ora l’elemento chimico il cui nucleo ha carica 8 ` e l’ossigeno; come risultato del proce sso di
+--------------------------------------------------
+CHUNK #20
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 443
+TEXT: 8 ` e l’ossigeno; come risultato del proce sso di urto si verr` a quindi ad avere produzione di ossigeno. Disgraziatamente la probabilit` a di ossigeno. Disgraziatamente la probabilit` a che una pa rticella α, urtando un nucleo di azoto, lo spezzi nel modo che ` e stato descritto, ` e estremamente picco la, per modo che, per quanto intensamente si bombardi l’azoto con le particelle α, la quantit` a di ossigeno prodotta resta sempre cos ` ı
+--------------------------------------------------
+CHUNK #21
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 119
+TEXT: a di ossigeno prodotta resta sempre cos ` ı piccola, da non essere nemmeno lontanamente osservabile con metodi chimici.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+CHUNK #22
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 439
+TEXT: Per scoprire la formazione dell’ossigeno si pu` o invece ricorrere app unto al metodo di Wilson. Occorre perci` o esaminare qualche decina di migliaia di fotograﬁe di traietto rie di particelle α nell’azoto; si riesce cos ` ı a scoprire qualche traiettoria che, ad un certo punto, si bif orca. Uno dei due rami ` e la traccia del passaggio del protone strappato, per eﬀetto dell’urto, dal nucle o di azoto; l’altro ramo, assai pi` u corto,
+--------------------------------------------------
+CHUNK #23
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 257
+TEXT: ` e invece prodotto dal passaggio del nucleo residuo, al quale si ` e aggregata la particella α urtante. Se dopo l’urto la particella α fosse invece rimasta libera, si sarebbe osservata una traccia che , al momento dell’urto, si doveva dividere in tre rami.
+--------------------------------------------------
+CHUNK #24
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 448
+TEXT: Anche fuori del campo della radioattivit` a sono state fatte delle ap plicazioni del metodo di Wilson di grandissimo interesse. Una delle pi` u signiﬁcative ` e l’esperienza di C ompton e Simon che illustra in modo notevolissimo il meccanismo dell’eﬀetto Compton. Secondo la teoria de i quanti di luce, il processo della diﬀusione dei raggi X per parte degli atomi (eﬀetto Compton) ` e il seguente: Consideriamo un quanto di luce di frequenza ν che
+--------------------------------------------------
+CHUNK #25
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 830
+TEXT: Consideriamo un quanto di luce di frequenza ν che urti contro un elettrone. Esso verr` a diﬀuso, cambiando cos ` ı di direzione; siccome per` o un quanto di luce, oltre alla sua energia hν, ha anche una quantit` a di moto, l’elettrone che ha prodotto il cambiamento di direzione del quanto, ricever` a un impu lso, eguale alla diﬀerenza vettoriale delle quantit` a dei moto del quanto di luce, prima e dopo l’urto. L’elet trone acquista cos ` ı, in e dopo l’urto. L’elet trone acquista cos ` ı, in seguito all’urto, una certa velocit` a, e l’energia cinetica corrispondente vien e fornita a spese del quanto di luce, la cui energia diminuisce per ci` o nell’urto. Siccome poi la frequenza di un quanto ` e proporzionale alla sua energia, la frequenza dei raggi diﬀusi risulter` a un po’ minore della frequenza di quelli incidenti.
+--------------------------------------------------
+CHUNK #26
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 686
+TEXT: L’esperienza veriﬁca in realt` a questa diminuzione della frequenza, e la diminuzione osservata corrisponde anche molto bene al calcolo teorico. Aveva tuttavia interesse la ver iﬁca diretta del meccanismo che abbiamo descritto; si trattava cio` e di far vedere che eﬀettivam ente tutte le volte che un quanto di luce viene diﬀuso in una data direzione, viene in corrispondenza proiettat o un elettrone in una direzione che pu` o facilmente elettrone in una direzione che pu` o facilmente prevedersi calcolando, per mezzo dei principi di conservazione dell’energia, e della quantit` a di moto, il processo dell’urto tra il quanto di luce e l’elettr one. Questa veriﬁca ` e stata fatta da
+--------------------------------------------------
+CHUNK #27
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 36
+TEXT: Compton e Simon col metodo seguente.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+CHUNK #28
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 449
+TEXT: In una camera di Wilson essi mandarono un sottile fascetto di ragg i X e fecero poi qualche migliaio di fotograﬁe delle tracce di nebbia che si formavano nella camera, producendo delle espansioni. Ogni volta venivano prese contemporaneamente due fotograﬁe in direz ioni perpendicolari, in modo da poter determinare stereoscopicamente la direzione delle tracce. In alcun e delle fotograﬁe si osservano delle tracce dovute a un elettrone che ` e delle
+--------------------------------------------------
+CHUNK #29
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 442
+TEXT: delle tracce dovute a un elettrone che ` e delle tracce dovute a un elettrone che ` e rimbalzato per eﬀetto della diﬀu sione di un quanto. La direzione della porzione iniziale della traccia ci d` a la direzione in cui ` e stato proie ttato l’elettrone per eﬀetto del rimbalzo; da questa si pu` o calcolare, con la teoria dell’urto, la direzio ne in cui ` e stato diﬀuso il quanto urtante. Ora accade abbastanza spesso che il quanto diﬀuso, ne
+--------------------------------------------------
+CHUNK #30
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 447
+TEXT: accade abbastanza spesso che il quanto diﬀuso, ne ll’attraversare il gas della camera, venga ne ll’attraversare il gas della camera, venga assorbito da un atomo, e gli strappi un elettrone per eﬀetto foto elettrico. In questo caso noi vedremo sulla stessa fotograﬁa, insieme alla traccia dell’elettrone di rimbalzo, anc he un’altra traccia che incomincia da un punto della traiettoria del quanto diﬀuso. Compton e Simon riuscir ono eﬀettivamente a
+--------------------------------------------------
+CHUNK #31
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 197
+TEXT: Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+CHUNK #32
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 317
+TEXT: Il risultato di questa esperienza si accorda perfettamente con le previsioni della teoria dei quanti di luce. Essa fu una delle pi` u tipiche esperienze che servirono a precis are il contrasto tra questa teoria e quella ondulatoria; contrasto che ha oggi trovato la sua soluzione n ella nuova meccanica quantistica.
+3
+--------------------------------------------------
+CHUNK #33
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 5
+TEXT: * * *
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+CHUNK #34
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 447
+TEXT: Ho cercato, con questi pochi esempi, di illustrare l’importanza che hanno avuto le esperienze sui fenomeni elementari nello sviluppo della ﬁsica moderna. Molto per` o c i si pu` o ancora attendere da es- perienze di questo tipo per chiarire quei problemi, la cui risoluzione c ostituir` a il compito della ﬁsica di domani. Tra questi forse il pi` u importante ` e quello della causalit` a . Nella ﬁsica dei fenomeni macro- scopici, tutti gli stati
+--------------------------------------------------
+CHUNK #35
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 447
+TEXT: dei fenomeni macro- scopici, tutti gli stati dei fenomeni macro- scopici, tutti gli stati futuri di un sistema sottratto a qualsiasi perturbazione esterna sono determinati univocamente dalla conoscenza dello stato iniziale del sistema stesso (determinismo). Si hanno invece varie ragioni che sembrano indicare che un simile principio deterministic o non sia valido nel mondo microscopico degli atomi. L’apparente determinismo macroscopico s arebbe
+--------------------------------------------------
+CHUNK #36
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 447
+TEXT: L’apparente determinismo macroscopico s arebbe unicamente il risultato del fatto che, nelle unicamente il risultato del fatto che, nelle osservazioni macroscopiche, si osservano solta nto delle medie di numerosissimi fenomeni che avvengono negli atomi costituenti i diversi corpi. Non sfugg ir` a a nessuno l’enorme importanza di questa questione e il profondo mutamento che avverrebbe nelle no stre vedute sopra i fenomeni naturali, il giorno che
+--------------------------------------------------
+CHUNK #37
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 443
+TEXT: vedute sopra i fenomeni naturali, il giorno che ci si dovesse eﬀettivamente convincere che il determ inismo ﬁsico ` e soltanto una propriet` il determ inismo ﬁsico ` e soltanto una propriet` a di media, non pi` u valida quando si opera sopra un singolo atomo. `E appunto da uno studio profondo dei fenomeni elementari che si potr` a avere la risposta a questo app assionante problema; si potr` a vedere cio` e se l’apparente indeterminismo dei
+--------------------------------------------------
+CHUNK #38
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 264
+TEXT: a vedere cio` e se l’apparente indeterminismo dei fenomeni elementari derivi dal f atto che si ` e omessa l’osservazione di qualche causa, oppure se esso rappresenti una delle leggi fondam entali se esso rappresenti una delle leggi fondam entali del mondo atomico.
+--------------------------------------------------
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 258
+ pi` u valida quando si opera sopra un singolo atomo. `E appunto da uno studio profondo dei fenomeni elementari che si potr` a avere la risposta a questo app assionante problema; si potr` a vedere cio` e se l’apparente indeterminismo dei
+--------------------------------------------------
+CHUNK #38
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 264
+TEXT: a vedere cio` e se l’apparente indeterminismo dei fenomeni elementari derivi dal f atto che si ` e omessa l’osservazione di qualche causa, oppure se esso rappresenti una delle leggi fondam entali se esso rappresenti una delle leggi fondam entali del mondo atomico.
+--------------------------------------------------
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 258
+arente indeterminismo dei
+--------------------------------------------------
+CHUNK #38
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 264
+TEXT: a vedere cio` e se l’apparente indeterminismo dei fenomeni elementari derivi dal f atto che si ` e omessa l’osservazione di qualche causa, oppure se esso rappresenti una delle leggi fondam entali se esso rappresenti una delle leggi fondam entali del mondo atomico.
+--------------------------------------------------
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 258
+PARAGRAPH: 0
+CHUNK LEN: 264
+TEXT: a vedere cio` e se l’apparente indeterminismo dei fenomeni elementari derivi dal f atto che si ` e omessa l’osservazione di qualche causa, oppure se esso rappresenti una delle leggi fondam entali se esso rappresenti una delle leggi fondam entali del mondo atomico.
+--------------------------------------------------
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 258
+messa l’osservazione di qualche causa, oppure se esso rappresenti una delle leggi fondam entali se esso rappresenti una delle leggi fondam entali del mondo atomico.
+--------------------------------------------------
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 258
+CHUNK #39
+PAGES: 3 → 3
+PARAGRAPH: 0
+CHUNK LEN: 258
+PARAGRAPH: 0
+CHUNK LEN: 258
+CHUNK LEN: 258
+TEXT: Contemporary Problems of Physics
+Enrico Fermi (Author), Emanuele Goldoni and Ledo Stefanini (Translators)
+The physics of recent decades, both in the experimental and the t heoretical ﬁelds, has been characterized by a increasing interest in atomic phenomena.
+--------------------------------------------------
+
+Ora i semantic chunks sembrano venir 'mergiati' correttamente dato che ci sono piu' du un semantic_chunk di 1000 chars. e anche un corretto cross page chunking, (vediamo che il metadata dice correttamente che il chunk inizia da pagina 1 e finisce nel 2 metadata dice correttamente che il chunk inizia da pagina 1 e finisce a pagina 2):
+ Document(metadata={'page': 1, 'page_start': 1, 'page_end': 2, 'paragraph_index': 0}, 
+page_content='Supponiamo poi di produrre l’espansione dell’aria umida della camera, u n momento dopo che essa ` e stata traversata da una particella. Il vapore acqueo si condenser` a a llora sugli ioni restati lungo la traiettoria della particella α, per modo che lungo di essa si verr` a a formare una serie di goccio line di nebbia bene visibili, specialmente se illuminate fortemente di traverso. Con lo stes so metodo si possono rendere\n2 visibili anche le traiettorie degli elettroni, bench´ e la loro osservazio ne sia di solito un po’ meno precisa, poich´ e gli elettroni producono sul loro passaggio un numero di ion i notevolmente minore delle particelle\nα.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Il metodo della nebbia per la osservazione..
+
+Vediamo anche che pre_merge_small_paragraphs ha 'merged' crrettamente il "small text to merge = Compton e Simon col metodo seguente non viene "merged" dalla funzione " che aveva anche correttamente printato sopra dentro la fun:
+Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='L’esperienza veriﬁca in realt` a questa diminuzione della frequenza, e la diminuzione osservata corrisponde anche molto bene al calcolo teorico. Aveva tuttavia interesse la ver iﬁca diretta del meccanismo che abbiamo descritto; si trattava cio` e di far vedere che eﬀettivam ente tutte le volte che un quanto di luce viene diﬀuso in una data direzione, viene in corrispondenza proiettat o un elettrone in una direzione che pu` o facilmente elettrone in una direzione che pu` o facilmente prevedersi calcolando, per mezzo dei principi di conservazione dell’energia, e della quantit` a di moto, il processo dell’urto tra il quanto di luce e l’elettr one. Questa veriﬁca ` e stata fatta da'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Compton e Simon col metodo seguente.')
+
+
+tuttavia ci sono ancora di alcuni dettagli importanti che, corregimi se sbaglio, si possano classificare come errori:
+1) molti pre semantic_chunks non hanno overlap tra i document chunks, mentri alcuni altri hanno overlap corretto
+2) alcuni 'pre' e 'post' semantic_chunks sono diversi tra loro ad esempio:
+'pre' semantic_chunk: 
+Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='In una camera di Wilson essi mandarono un sottile fascetto di ragg i X e fecero poi qualche migliaio di fotograﬁe delle tracce di nebbia che si formavano nella camera, producendo delle espansioni. Ogni volta venivano prese contemporaneamente due fotograﬁe in direz ioni perpendicolari, in modo da poter determinare stereoscopicamente la direzione delle tracce. In alcun e delle fotograﬁe si osservano delle tracce dovute a un elettrone che ` e delle tracce dovute a un elettrone che ` e rimbalzato per eﬀetto della diﬀu sione di un quanto. La direzione della porzione iniziale della traccia ci d` a la direzione in cui ` e stato proie ttato l’elettrone per eﬀetto del rimbalzo; da questa si pu` o calcolare, con la teoria dell’urto, la direzio ne in cui ` e stato diﬀuso il quanto urtante. Ora accade abbastanza spesso che il quanto diﬀuso, ne ll’attraversare il gas della camera, venga ne ll’attraversare il gas della camera, venga assorbito da un atomo, e gli strappi un elettrone per eﬀetto foto elettrico. In questo caso noi vedremo sulla stessa fotograﬁa, insieme alla traccia dell’elettrone di rimbalzo, anc he un’altra traccia che incomincia da un punto della traiettoria del quanto diﬀuso. Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto.
+
+(qui il small chunk "Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto" e' stato megiato correttamente)
+--------
+
+
+
+'post' semantic_chunk:
+
+CHUNK #31
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 197
+TEXT: Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED.
+Qui invece In 'post' semantic_chunk, il chunk "Compton e Simon riuscir ono...  non e' stato mergiato. Perche? i chunks non devono essere gli stessi dei 'pre' semantic_chunk se questi non vengono 'merged' semanticamente?
+
+3) la funzione pre_merge_small_paragraphs sembra ha 'mergiato' correttamente solo il "small text to merge = Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α.", mentre gli altri 3 "small text to merge" non sono stati 'merged' come risulta in entrambi i 'pre' e 'post' semantic_chunks, es:
+
+'pre' semantic_chunks:
+il processo dell’urto tra il quanto di luce e l’elettr one. Questa veriﬁca ` e stata fatta da'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Compton e Simon col metodo seguente.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='In una camera di Wilson 
+
+'post' semantic_chunks
+CHUNK #27
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 36
+TEXT: Compton e Simon col metodo seguente.
+
+
+
+
+
+
+

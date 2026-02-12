@@ -33,9 +33,11 @@ def semantic_chunk_paragraphs(paragraph_docs,
         for doc in paragraph_docs
     ] # ricaviamo un array contenente gli embeddings di tutti i chunks. Coordinate degli embeddings
     # necessarie per attingere(da dentro il loop sotto), ai corretti emb di ogni chunk
-    print('paragraph_embeddings len =', len(paragraph_embeddings))
-     
-
+    # print('paragraph_embeddings len =', len(paragraph_embeddings)) # la logica del semantic chunking puo separe
+    # i chunks 'merged' in 'post_merge_small_chunks' se questi non similarmente semantici.
+    # inoltre. se un grande 'pre'semantic chunk document arriva qui, questo viene spezzettato in chunk
+    # in piu' chunks, oppure unisce 2 o 3 chunks fortemante simili semanticamente, senza mai sforare 
+    # il max_char = 1200 (piu' di 1200)
     final_chunks = []
 
     # Inizializzazione del primo chunk. Questo e' il primo chunk di riferimento semantico, e ci serve come
@@ -49,7 +51,8 @@ def semantic_chunk_paragraphs(paragraph_docs,
 
      # embedding del chunk aggregato (inizialmente = primo paragrafo)
     current_embedding = paragraph_embeddings[0] # l'embedding iniziale. (cambia nel loop)
-    print('paragraph_docs =', paragraph_docs)
+    # print('paragraph_docs for semantic chunking =', paragraph_docs)
+    
     # Loop principale (il cuore della funzione).
     # Qui Iteri sui chunk successivi uno a uno
     for i in range(1, len(paragraph_docs)): # passiamo questi dati di 

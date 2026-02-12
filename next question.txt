@@ -1,0 +1,31 @@
+next question :
+
+mi crei una funzione che fa' il cleaning al caso nostro?
+la mia precedente funzione era questa:
+def clean_pdf_text(text: str) -> str:
+         # unisce parole spezzate da hyphen + newline
+            text = re.sub(r"-\s*\n\s*", "", text)
+            # normalizza spazi multipli
+            text = re.sub(r"\s+", " ", text)
+
+            return text.strip()
+e la ' usavo cosi' :
+for page_idx, doc in enumerate(docs): 
+            
+            paragraphs = split_into_paragraphs(doc.page_content) 
+
+            for i, paragraph_text in enumerate(paragraphs):
+                 clean_chunks = clean_pdf_text(paragraph_text)
+                 if len(paragraph_text) > 450:
+                     small_chunks = splitter.split_documents([Document(page_content=clean_chunks)])
+                     for chunk in small_chunks: # prendi le stringe di questi documents
+                         clean_paragraph_docs.append(
+                             Document(
+                                page_content=chunk.page_content, # text di ogni documente
+                                metadata={
+                                    "page":page_idx,
+                                    "page_start": page_idx,
+                                    "page_end": page_idx,
+                                    "paragraph_index": i  
+                                }
+                              )

@@ -73,11 +73,16 @@ def ingest_pdf(file_path: str, user_id: str):
         # page_windows = build_page_windows(docs, window_size=2) 
         
 
-        for page_idx, doc in enumerate(docs): 
+        for page_idx, doc in enumerate(docs): # docs = raccolta in formato Document di tutte la pagine del pdf
+             # doc = 1 pagina intera del pdf(loopiamo su tutte le pagine per fare chunking sui paragrafi(se ci sono) di ogni pagina
+             # se non ci sono paragrafi e la pagina e' formata da un blocco unico di testo, facciamo chunking sulla pagina stessa
+             
             # Controlliamo se una pagina pdf contenga paragrafi o se e' un singolo blocco di testo
             # e' possibile che non ci sia nemmeno un paragrafo nella pagina pdf che stiamo analizando
             # e sotto preveniamo che non creiamo un document che equivale un intera pagina
-            paragraphs = split_into_paragraphs(doc.page_content) 
+            paragraphs = split_into_paragraphs(doc.page_content) # non sempre riconosce i paragrafi se 
+            # il pdf e' fatto male
+            
             # clean_chunks = clean_pdf_text(paragraphs_docs)
 
             for i, paragraph_text in enumerate(paragraphs):
@@ -86,7 +91,9 @@ def ingest_pdf(file_path: str, user_id: str):
                      # e' composta da 2 grandi paragrafi di ad esempio 1300 char o piu' ciascuno
                      # la suddividiamo in chunk di 450 per evitare piu' avanti di avere embeddings 
                      # troppo grandi e quindi imprecisi per semanti chunking e bad retrival 
-                     small_chunks = splitter.split_documents([Document(page_content=paragraph_text)]) # lista document
+                     small_chunks = splitter.split_documents([Document(page_content=paragraph_text)]) # lista document. Questi chunks
+                     # avranno overlap perche > 450 chars. In questi casi overlap e' necessario per 
+                     # miglior llm retrival
                      for chunk in small_chunks: # prendi le stringe di questi documents
                          clean_paragraph_docs.append(
                              Document(
@@ -103,7 +110,7 @@ def ingest_pdf(file_path: str, user_id: str):
                      # se troppo piccoli verranno 'merged' con gli altri chunks se z 130 chat (funzione pre_merge_small_paragraphs)
                     #  small_chunks = paragraph_doc
                      clean_paragraph_docs.append(
-                        Document( 
+                        Document(  # no overlap for those small chunks, they can harm the Rag app
                            page_content= paragraph_text, # text del doc
                            metadata={
                               "page":page_idx,
@@ -116,17 +123,16 @@ def ingest_pdf(file_path: str, user_id: str):
                 #  clean_paragraph_docs.append(para_doc)
 
        
-       # Se un chunk inizia nella pagina 3 e prosegue nella pagina 4, questa funzione non spezza
-       # il chunk, ma li unisce(unione chunks cross page)
+   
         clean_paragraph_docs = merge_broken_sentences(clean_paragraph_docs)         
    
-        # unisce chunks < 130 char con il chunk precedente
+
         clean_paragraph_docs = pre_merge_small_paragraphs( 
             clean_paragraph_docs,
             min_chars=130,
             max_chars=600
         )
-        # print('clean_paragraph_docs =',clean_paragraph_docs)
+        print('clean_paragraph_docs =',clean_paragraph_docs)
 
        # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
        # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
@@ -140,11 +146,11 @@ def ingest_pdf(file_path: str, user_id: str):
             max_chars = 1200 
             )
 
-        # semantic_chunks = post_merge_small_chunks( 
-        #     semantic_chunks,
-        #     min_chars=250,  
-        #     max_chars=1200 
-        #     )
+        semantic_chunks = post_merge_small_chunks( 
+            semantic_chunks,
+            min_chars=250,  
+            max_chars=1200 
+            )
 
 
         #  # Step 3: ulteriore split per lunghezza se necessario
@@ -157,6 +163,7 @@ def ingest_pdf(file_path: str, user_id: str):
                 #  all_chunks.extend(para_chunks) # ERRATO. chunk è un Document, non una lista.
                 # extend(chunk) prova a iterare su chunk → risultato non definito / corrotto.
             else:  # never reach this else for now
+                 print('final split hit')
                  para_chunks = splitter.split_documents([chunk])
                  all_chunks.extend(para_chunks)
                 

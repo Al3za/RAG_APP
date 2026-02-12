@@ -1,0 +1,77 @@
+pre_merge_small_paragraphs:
+if text_len < min_chars:
+            print('pre_merge_small_paragraphs hit')
+            print('small text to merge =', doc.page_content)
+
+pre_merge_small_paragraphs hit
+small text to merge = Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α.
+pre_merge_small_paragraphs hit
+small text to merge = Compton e Simon col metodo seguente.
+pre_merge_small_paragraphs hit
+small text to merge = * * *
+pre_merge_small_paragraphs hit
+small text to merge = 4
+
+page 4 (chunk corto e solo contenente il testo "4" del cambio pagina):
+  Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='On the contrary, if there are ions in the moist air, water vapor cond enses around them so that a water droplet is formed around each ion, making it visible.'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='One of the best known applications of Wilson’s device is the observatio n of the trajectories of α particles. When an α particle is thrown at a very high velocity through the air by a radioact ive substance, it breaks up the molecules it encounters on its path; thus, it leaves o n its path a large number of ions, which are the residue of the broken molecules. Let’s place a small gra nule of radioactive substance within a Wilson chamber: it will substance within a Wilson chamber: it will throw α particles all around. Then, let’s suppose that we generate the expansion of the moist air of the chamber just after it has been tra versed by a particle. The water vapor will then condense on the ions left along the trajectory of the α particle: hence, a series of mist droplets will form and it will be well visible, especially when tangentially strongly illum inated. The trajectories of the strongly illum inated. The trajectories of the electrons could be made visible by the same method, although the ir observation is usually somewhat less precise, since electrons produce considerably fewer ions than α particles on their passage.').'), Document(metadata={'page': 3, 'page_start': 3, 'page_end': 3, 'paragraph_index': 0}, page_content='4'), Document(metadata={'page': 4, 'page_start': 4, 'page_end': 4, 'paragraph_index': 0}, page_content='The cloud method for observing....
+
+
+Ma s e nell’aria umida si trovano degli ioni, il vapore acqueo si condensa intorno ad essi per modo che att orno ad ogni ione viene a formarsi una gocciolina d’acqua che lo rende visibile.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Una delle pi` u note applicazioni di questo metodo di Wilson si ha nella o sservazione delle traiettorie
+
+
+small text to merge = Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α. e' stato 'merged' con successo
+ Document(metadata={'page': 1, 'page_start': 1, 'page_end': 1, 'paragraph_index': 0}, page_content='Una delle pi` u note applicazioni di questo metodo di Wilson si ha nella o sservazione delle traiettorie delle particelle α. Quanto una particella α viene proiettata con grandissima velocit` a attraverso all’aria da una sostanza radioattiva, essa spezza le molecole che incontra s ul suo cammino, lasciando sul suo percorso un grande numero di ioni, residuo delle molecole spezzate. Poniamo entro una camera di Wilson un piccolo granulo di sostanza radioattiva, che proietter` a t utto intorno a s´ e delle particelle α.'), Document(metadata={'page': 1, 'page_start': 1, 'page_end': 2, 'paragraph_index': 0}, page_content='Supponiamo poi di produrre l’espansione dell’aria umida della camera, u n momento dopo che essa ` e stata traversata d.....
+
+
+
+corretto cross page chunking:vediamo che il metadata dice correttamente che il chunk inizia da pagina 1 e finisce nel 2:(no overlap tuttavia)
+ Document(metadata={'page': 1, 'page_start': 1, 'page_end': 2, 'paragraph_index': 0}, page_content='Supponiamo poi di produrre l’espansione dell’aria umida della camera, u n momento dopo che essa ` e stata traversata da una particella. Il vapore acqueo si condenser` a a llora sugli ioni restati lungo la traiettoria della particella α, per modo che lungo di essa si verr` a a formare una serie di goccio line di nebbia bene visibili, specialmente se illuminate fortemente di traverso. Con lo stes so metodo si possono rendere\n2 visibili anche le traiettorie degli elettroni, bench´ e la loro osservazio ne sia di solito un po’ meno precisa, poich´ e gli elettroni producono sul loro passaggio un numero di ion i notevolmente minore delle particelle\nα.'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Il metodo della nebbia per la osservazione...
+
+
+small text to merge = Compton e Simon col metodo seguente non viene "merged" dalla funzione pre_merge_small_paragraphs: 
+Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='L’esperienza veriﬁca in realt` a questa diminuzione della frequenza, e la diminuzione osservata corrisponde anche molto bene al calcolo teorico. Aveva tuttavia interesse la ver iﬁca diretta del meccanismo che abbiamo descritto; si trattava cio` e di far vedere che eﬀettivam ente tutte le volte che un quanto di luce viene diﬀuso in una data direzione, viene in corrispondenza proiettat o un elettrone in una direzione che pu` o facilmente elettrone in una direzione che pu` o facilmente prevedersi calcolando, per mezzo dei principi di conservazione dell’energia, e della quantit` a di moto, il processo dell’urto tra il quanto di luce e l’elettr one. Questa veriﬁca ` e stata fatta da'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Compton e Simon col metodo seguente.')
+
+
+corretto in docs, ma diverso dopo  semantic_chunks:
+es 1:
+'pre' semantic_chunk: 
+Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='In una camera di Wilson essi mandarono un sottile fascetto di ragg i X e fecero poi qualche migliaio di fotograﬁe delle tracce di nebbia che si formavano nella camera, producendo delle espansioni. Ogni volta venivano prese contemporaneamente due fotograﬁe in direz ioni perpendicolari, in modo da poter determinare stereoscopicamente la direzione delle tracce. In alcun e delle fotograﬁe si osservano delle tracce dovute a un elettrone che ` e delle tracce dovute a un elettrone che ` e rimbalzato per eﬀetto della diﬀu sione di un quanto. La direzione della porzione iniziale della traccia ci d` a la direzione in cui ` e stato proie ttato l’elettrone per eﬀetto del rimbalzo; da questa si pu` o calcolare, con la teoria dell’urto, la direzio ne in cui ` e stato diﬀuso il quanto urtante. Ora accade abbastanza spesso che il quanto diﬀuso, ne ll’attraversare il gas della camera, venga ne ll’attraversare il gas della camera, venga assorbito da un atomo, e gli strappi un elettrone per eﬀetto foto elettrico. In questo caso noi vedremo sulla stessa fotograﬁa, insieme alla traccia dell’elettrone di rimbalzo, anc he un’altra traccia che incomincia da un punto della traiettoria del quanto diﬀuso. Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto.
+
+(qui il small chunk "Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto" e' stato megiato correttamente)
+
+
+'post' semantic_chunk:
+
+CHUNK #31
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 197
+TEXT: Compton e Simon riuscir ono eﬀettivamente a osservare in un buon numero di fotograﬁe delle coppie di tracce disposte nel mo do che abbiamo coppie di tracce disposte nel mo do che abbiamo descritto.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED.
+Qui invece In 'post' semantic_chunk, il chunk "Compton e Simon riuscir ono...  non e' stato mergiato. Perche? i chunks non devono essere gli stessi dei 'pre' semantic_chunk se questi non vengono 'merged' semanticamente?
+
+
+es:2
+
+ Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Il metodo della nebbia per la osservazione delle traiettorie delle partic elle α ` e stato elaborato spe- cialmente nella scuola di Rutherford a Cambridge e ha portato a risult ati di eccezionale interesse. Uno dei pi` u importanti consiste nell’osservazione della cos ` ı detta dis integrazione artiﬁciale dei nuclei di certi atomi. Quando una particella α urta contro il nucleo di un atomo, pu` o accadere che essa lo spezz i strap- pandone un o accadere che essa lo spezz i strap- pandone un protone, il quale non ` e altro che un nucleo di idrogeno; la particella urtante pu` o rimbalzare via, oppure restare aggregata al nucleo urtato. Cos ` ı per es. s upponiamo di bombardare dell’azoto con delle particelle α molto veloci. L’azoto ha numero atomico 7, cio` e la carica elettrica del suo nucleo ` e sette volte la carica elettrica elementare del protone. Se una part icella α urta un del protone. Se una part icella α urta un nucleo di azoto e ne distacca un protone, la carica del nucleo residuo resta 6; suppone ndo che la particella α urtante (di carica 2) resti aggregata al nucleo, la carica elettrica del comples so che ne risulta sar` a 8. Ora l’elemento chimico il cui nucleo ha carica 8 ` e l’ossigeno; come risultato del proce sso di urto si verr` a quindi ad avere produzione di ossigeno. Disgraziatamente la probabilit` a di ossigeno. Disgraziatamente la probabilit` a che una pa rticella α, urtando un nucleo di azoto, lo spezzi nel modo che ` e stato descritto, ` e estremamente picco la, per modo che, per quanto intensamente si bombardi l’azoto con le particelle α, la quantit` a di ossigeno prodotta resta sempre cos ` ı piccola, da non essere nemmeno lontanamente osservabile con metodi chimici.'), Document(metadata=...
+
+print dopo semantic chunk:
+
+CHUNK #20
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 443
+TEXT: 8 ` e l’ossigeno; come risultato del proce sso di urto si verr` a quindi ad avere produzione di ossigeno. Disgraziatamente la probabilit` a di ossigeno. Disgraziatamente la probabilit` a che una pa rticella α, urtando un nucleo di azoto, lo spezzi nel modo che ` e stato descritto, ` e estremamente picco la, per modo che, per quanto intensamente si bombardi l’azoto con le particelle α, la quantit` a di ossigeno prodotta resta sempre cos ` ı
+--------------------------------------------------
+CHUNK #21
+PAGES: 2 → 2
+PARAGRAPH: 0
+CHUNK LEN: 119
+TEXT: a di ossigeno prodotta resta sempre cos ` ı piccola, da non essere nemmeno lontanamente osservabile con metodi chimici.
+--------------------------------------------------
+⚠️ SMALL CHUNK DETECTED
+e' normale che i chunks "pre" e "post" semantic_chunking sono  diversi?
+
+overlap solo in certi chunks ad esempio:
+ Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Anche fuori del campo della radioattivit` a sono state fatte delle ap plicazioni del metodo di Wilson di grandissimo interesse. Una delle pi` u signiﬁcative ` e l’esperienza di C ompton e Simon che illustra in modo notevolissimo il meccanismo dell’eﬀetto Compton. Secondo la teoria de i quanti di luce, il processo della diﬀusione dei raggi X per parte degli atomi (eﬀetto Compton) ` e il seguente: Consideriamo un quanto di luce di frequenza ν che'), Document(metadata={'page': 2, 'page_start': 2, 'page_end': 2, 'paragraph_index': 0}, page_content='Consideriamo un quanto di luce di frequenza ν che urti contro un elettrone. Esso verr` a diﬀuso, cambiando cos ` ı di direzione; siccome per` o un quanto di luce, oltre alla sua energia hν, ha anche una quantit` a di moto, l’elettrone che ha prodotto il cambiamento di direzione del quanto, ricever` a un impu lso, eguale alla diﬀerenza vettoriale delle quantit` a dei moto del quanto di luce, prima e dopo l’urto. L’elet trone acquista cos ` ı, in e dopo l’urto. L’elet trone acquista cos ` ı, in seguito all’urto, una certa velocit` a, e l’energia cinetica corrispondente vien e fornita a spese del quanto di luce, la cui energia diminuisce per ci` o nell’urto. Siccome poi la frequenza di un quanto ` e proporzionale alla sua energia, la frequenza dei raggi diﬀusi risulter` a un po’ minore della frequenza di quelli incidenti.'), Document(metadata= .....
