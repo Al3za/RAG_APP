@@ -71,7 +71,7 @@ def pre_merge_small_paragraphs(
 # iniziale di 240 char, il che e' troppo piccolo, perche gli embeddings di chunks < 250 char possono causare imprecisione, e portano
 # il modello a confondersi, risultando in un possibile bad retrival
 
-def post_merge_small_chunks( # Con il mio setup attuale (base chunk: 450 chars e pre-merge <130 chars)   Nel 90–95% dei casi questa funzione
+def post_merge_semantic_small_chunks( # Con il mio setup attuale (base chunk: 450 chars e pre-merge <130 chars)   Nel 90–95% dei casi questa funzione
         # non verra mai invocata
     chunks,# i cleaned chunks, pre merged
     min_chars=250, # sweet spot di default, per mergare i semantic chunks di questa grandezza 

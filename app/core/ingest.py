@@ -10,7 +10,7 @@ from langchain_openai import OpenAIEmbeddings # il modello AI per creare embeddi
 from pinecone import Pinecone, ServerlessSpec # SDK Pinecone
 from app.core.cosine_similarity_fun import semantic_chunk_paragraphs
 from app.core.merge_broke_sentence_cross_page import merge_broken_sentences
-from app.core.pre_post_merge_small_parag import post_merge_small_chunks, pre_merge_small_paragraphs
+from app.core.pre_post_merge_small_parag import post_merge_semantic_small_chunks, pre_merge_small_paragraphs
 # from app.core.page_overlap  import build_page_windows
 
 # NEL FILE ingest_desc.py VIENE SPIEGATO DETTAGLIATAMENTE COSA AVVIENE IN QUESTO FILE RIGA PER RIGA
@@ -54,6 +54,23 @@ def ingest_pdf(file_path: str, user_id: str):
         
       #   /-------------/
 
+        print('docs here =', docs)
+
+        # def split_into_paragraphs(text):
+
+        #     # Unisci line break interni (righe spezzate)
+        #     text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+
+        #     # Dividi su doppio newline
+        #     paragraphs = re.split(r'\n\s*\n', text)
+
+        #     # Se ancora è uno solo, fallback intelligente
+        #     if len(paragraphs) == 1:
+        #         paragraphs = re.split(r'(?<=\.)\s+(?=[A-ZÀÈÉÌÒÙ])', text)
+        
+        #     return [p.strip() for p in paragraphs if p.strip()]
+
+
         def split_into_paragraphs(text):
              # Unisci linee spezzate
              text = re.sub(r'\n(?=[a-zàèéìòù])', ' ', text)
@@ -74,70 +91,97 @@ def ingest_pdf(file_path: str, user_id: str):
         
 
         for page_idx, doc in enumerate(docs): # docs = raccolta in formato Document di tutte la pagine del pdf
-             # doc = 1 pagina intera del pdf(loopiamo su tutte le pagine per fare chunking sui paragrafi(se ci sono) di ogni pagina
+             # doc = i paragrafi di 1 pagina intera del pdf o se non esistono paragrafi, doc= all'intera pagina 
+             # (loopiamo su tutte le pagine per fare chunking sui paragrafi(se ci sono) di ogni pagina
              # se non ci sono paragrafi e la pagina e' formata da un blocco unico di testo, facciamo chunking sulla pagina stessa
-             
+            # print(repr(doc.page_content))
             # Controlliamo se una pagina pdf contenga paragrafi o se e' un singolo blocco di testo
             # e' possibile che non ci sia nemmeno un paragrafo nella pagina pdf che stiamo analizando
             # e sotto preveniamo che non creiamo un document che equivale un intera pagina
             paragraphs = split_into_paragraphs(doc.page_content) # non sempre riconosce i paragrafi se 
-            # il pdf e' fatto male
+
+            # print(paragraphs)
+            # il pdf e' fatto male. Ques
             
-            # clean_chunks = clean_pdf_text(paragraphs_docs)
+            paragraph_docs = [ # i documenti dei paragrafi (o blocco pagina intero se paragrafi non esistono), per ogni pagina del pdf
+                Document(
+                    page_content=para,
+                    metadata={
+                       "page": page_idx,
+                       "page_start": page_idx,
+                       "page_end": page_idx,
+                       "paragraph_index": i
+                }
+               )
+               for i, para in enumerate(paragraphs)
+            ]
 
-            for i, paragraph_text in enumerate(paragraphs):
+            # 3️⃣ merge cross-page in-line
+            paragraph_docs = merge_broken_sentences(paragraph_docs) # Guarda se l’ULTIMO CHUNK 
+            # finisce con punteggiatura forte e se il next inizia con una maiuscola. In tal caso unisce questi chunk. Se non
+            # MAX_MERGE_LEN questo chunk puo' diventare davvero grande. (Non importa se è fine pagina o è metà pagina). questa pratica
+            # Aumenta logica semantica tra i chunks e crea unisce 2 chunks per un massimo di 900 chars
 
-                 if len(paragraph_text) > 450: # se la pagina pdf e' un singolo blocco testo, o se
-                     # e' composta da 2 grandi paragrafi di ad esempio 1300 char o piu' ciascuno
-                     # la suddividiamo in chunk di 450 per evitare piu' avanti di avere embeddings 
-                     # troppo grandi e quindi imprecisi per semanti chunking e bad retrival 
-                     small_chunks = splitter.split_documents([Document(page_content=paragraph_text)]) # lista document. Questi chunks
-                     # avranno overlap perche > 450 chars. In questi casi overlap e' necessario per 
-                     # miglior llm retrival
-                     for chunk in small_chunks: # prendi le stringe di questi documents
-                         clean_paragraph_docs.append(
-                             Document(
-                                page_content=chunk.page_content, # text di ogni documente
-                                metadata={
-                                    "page":page_idx,
-                                    "page_start": page_idx,
-                                    "page_end": page_idx,
-                                    "paragraph_index": i  
-                                }
-                              )
-                          )
-                 else: # se i paragrafi esistono e sono < 450 char, vengono mantanuti come sono, e poi eventualmente
-                     # se troppo piccoli verranno 'merged' con gli altri chunks se z 130 chat (funzione pre_merge_small_paragraphs)
-                    #  small_chunks = paragraph_doc
-                     clean_paragraph_docs.append(
-                        Document(  # no overlap for those small chunks, they can harm the Rag app
-                           page_content= paragraph_text, # text del doc
-                           metadata={
-                              "page":page_idx,
-                              "page_start": page_idx,
-                              "page_end": page_idx,
-                              "paragraph_index": i  
-                           }
-                        )   
-                      )
-                #  clean_paragraph_docs.append(para_doc)
+            # 4️⃣ split in small chunks con overlap e append diretto in clean_paragraph_docs
+            for para_doc in paragraph_docs:
+                text_len = len(para_doc.page_content)
 
-       
-   
-        clean_paragraph_docs = merge_broken_sentences(clean_paragraph_docs)         
+                if text_len > 450:
+                    # split con il tuo splitter (gestisce max_chars + overlap)
+                    small_chunks = splitter.split_documents([para_doc])
+                    for chunk in small_chunks:
+                        # aggiorniamo metadata se vuoi, qui manteniamo quello originale
+                        clean_paragraph_docs.append(chunk)
+                else:
+                    # chunk corto rimane così com'è. Qui non abbiamo bisogno di overlap perche' se' il chunk e <130 chars verra' merged
+                    # nella fun pre_merge_small_paragraphs, se invece e' > 130 e < 450, ed simile al suo next chunk, questi verranno comunque merged  
+                    # infine, se non se questo small chunk non viene merged in questi due casi, puo' venir 'merged' alla fine in "post_merge_semantic_small_chunks"
+                    # cerchiamo in piu' modi logici di unire i piccoli chunks perche potrebbero creare embeddings
+                    # inutili e dannosi per il nostro rag app
+                    clean_paragraph_docs.append(para_doc)       
    
 
         clean_paragraph_docs = pre_merge_small_paragraphs( 
-            clean_paragraph_docs,
+            clean_paragraph_docs, 
             min_chars=130,
             max_chars=600
         )
-        print('clean_paragraph_docs =',clean_paragraph_docs)
 
+        # print('clean_paragraph_docs =',clean_paragraph_docs) # 83 chunks totali
+
+        CROSS_PAGE_OVERLAP = 50
+        # print(len('len here:',clean_paragraph_docs))
+        # extra page_overlap for cross_page only
+        for i in range(1, len(clean_paragraph_docs)):
+            current_doc = clean_paragraph_docs[i] # il next chunk rispetto a prev_doc chunk
+            prev_doc = clean_paragraph_docs[i - 1] # il chunk prima di current_doc
+            # print('current page start =', current_doc.metadata.get("page_start"))
+            # print('current_doc.metadata.get("page_end"):   =', current_doc.metadata.get("page_start"))
+            #  Caso cross-page. Se per esempio page_start = 1 e page_end = 2
+            if prev_doc.metadata.get("page_start") != current_doc.metadata.get("page_end"):
+            #    print('current_doc here=', current_doc)
+            #    print('prev_doc here=', prev_doc)
+               
+               # Prendiamo gli ultimi 50 chars del precedente
+               prefix = prev_doc.page_content[-CROSS_PAGE_OVERLAP:]
+            #    print('prefix hit =', prefix)
+               # Evitiamo doppie duplicazioni
+               if not current_doc.page_content.startswith(prefix):
+                #    print('not current_doc hit')
+                   current_doc.page_content = prefix + " " + current_doc.page_content
+                #    prev_doc.metadata["page_end"] = current_doc.metadata.get("page_end")
+
+        
+        
+        # print('clean_paragraph_docs_overflow =',clean_paragraph_docs) #  83 chunks totali
+          
+        # print('clean_paragraph_docs =',clean_paragraph_docs) # 83 chunks totali
+        
        # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
        # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
        # piu' correlati alla query dello user (la domanda che l'utente fa' al llm dopo aver caricato il pdf)
        # e cosi' llm andra' a formulare riposte soddisfacenti(retrival)
+
         semantic_chunks = semantic_chunk_paragraphs( 
             paragraph_docs=clean_paragraph_docs, 
                 
@@ -145,15 +189,18 @@ def ingest_pdf(file_path: str, user_id: str):
             sim_threshold=0.65, # sweet spot per fare merge dei chunks
             max_chars = 1200 
             )
-
-        semantic_chunks = post_merge_small_chunks( 
+        
+        # print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
+        
+        semantic_chunks = post_merge_semantic_small_chunks( 
             semantic_chunks,
             min_chars=250,  
             max_chars=1200 
             )
 
+        # print('post semantic_chunks here = ', semantic_chunks ) # 53 chunks
 
-        #  # Step 3: ulteriore split per lunghezza se necessario
+        # #  # Step 3: ulteriore split per lunghezza se necessario
         MAX_FINAL_CHUNK_CHARS = 1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione
 
         for chunk in semantic_chunks:
@@ -163,12 +210,12 @@ def ingest_pdf(file_path: str, user_id: str):
                 #  all_chunks.extend(para_chunks) # ERRATO. chunk è un Document, non una lista.
                 # extend(chunk) prova a iterare su chunk → risultato non definito / corrotto.
             else:  # never reach this else for now
-                 print('final split hit')
+                 
                  para_chunks = splitter.split_documents([chunk])
                  all_chunks.extend(para_chunks)
                 
 
-            #   debugg
+        # #     #   debugg
         for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
              print(f"CHUNK #{i}")
              print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
