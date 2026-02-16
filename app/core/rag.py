@@ -93,9 +93,12 @@ def ask_question(user_id: str, question: str):
     print(' =', user_id)
 
     retriever = vectorstore.as_retriever(
+        search_type="mmr",
         search_kwargs={ # le prime quattro caselle con piu' alta similarita semantica con la query
-            "k": 5 # solo una casella sono pochi dati, ma avendo le 4 piu' " semanticamente simili" alla query, lo llm definito sopra ci creera' una response piu' robuusta e' dettagliata, con i daty di "text" delle prime 4 caselle
+            "k": 5, # solo una casella sono pochi dati, ma avendo le 4 piu' " semanticamente simili" alla query, lo llm definito sopra ci creera' una response piu' robuusta e' dettagliata, con i daty di "text" delle prime 4 caselle
             # "filter": {"user_id": user_id} # filtra tra i pdf chunks dello user specifico, altrimenti il modello leggerebbe gli pdf di tutti gli users
+            "fetch_k": 15,
+            "lambda_mult":0.5
         }
     )
 

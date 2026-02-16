@@ -2,17 +2,18 @@ import os
 import re
 from dotenv import load_dotenv 
 
-# from langchain_pinecone import Pinecone as LC_Pinecone
 from langchain_core.documents import Document
 from langchain_pinecone import PineconeVectorStore, Pinecone
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader
-# from langchain_community.vectorstores import Pinecone
 from langchain_openai import OpenAIEmbeddings # il modello AI per creare embeddings semantici
 from pinecone import Pinecone, ServerlessSpec # SDK Pinecone
-from app.core.merge_small_chunk import merge_small_chunks
-from app.core.page_overlap  import build_page_windows
+from app.core.cosine_similarity_fun import semantic_chunk_paragraphs
+from app.core.merge_broke_sentence_cross_page import merge_broken_sentences
+from app.core.pre_post_merge_small_parag import post_merge_semantic_small_chunks, pre_merge_small_paragraphs
+# from app.core.page_overlap  import build_page_windows
 
+# NEL FILE ingest_desc.py VIENE SPIEGATO DETTAGLIATAMENTE COSA AVVIENE IN QUESTO FILE RIGA PER RIGA
 
 load_dotenv()
 
@@ -22,174 +23,301 @@ load_dotenv()
 pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 # 2️⃣ Index name dal .env
-# index_name = os.getenv("PINECONE_INDEX_NAME", "rag-pdf-index") # use rag-pdf-index the first time  you create an index
 index_name = os.getenv("PINECONE_INDEX_NAME") # gia creato sotto, basta crearlo 1 volta per questo e' commentato
-
-# index_name_large = os.getenv("PINECONE_INDEX_NAME_LARGE"). gia' creato, usalo quando vuoi usare emb large
-
-# index_name_large = "rag-pdf-index-large" # creiamo un index con embeddings model large, che e' piu' lento di small. ma piu' forte e' preciso
-
-# # # 3️⃣ Crea index se non esiste
-# existing_indexes = [i.name for i in pc.list_indexes()]
-# if index_name not in existing_indexes: # if index_name_large
-#     pc.create_index(
-#         name=index_name, # name = index_name_large
-#         dimension=1536,   # (cambia in 3072 per large "text-embedding-3-large")   # per text-embedding-3-small, (leggi file core/AboutEmbeddings_and_indexes.txt )
-#         metric="cosine",
-#         spec=ServerlessSpec(
-#             cloud="aws",
-#             region="us-east-1"  # free tier
-#         )
-#     )
-#     print(f"Index '{index_name}' creato ✅")
-# else:
-#     print(f"Index '{index_name}' già esistente ✅")
-
-# print("Indexes attuali:", [i.name for i in pc.list_indexes()])
-
-# embeddings_model = OpenAIEmbeddings() # quando non definito, OpenAIEmbeddings usa di default si usa = "text-embedding-3-small" che deve corrispondere all' index dimension=1536 quando andiamo a creare l'index. 
-# # text-embedding-3-small va bene per questo progetto demo. Se vuoi una migliore generazione della res e' un serch piu' accurato per pdf piu' complessi, usa text-embedding-3-large qui sotto. maggiori descrizioni su text-embedding nell file AboutEmbeddings_and_indexes.txt
-# embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large") # usiamo "text-embedding-3-large" se vogliamo usare embeddings piu' complessi, per pdf piu' complessi che danno un miglior data retriving
-
 
 
 embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small")
-# embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large") # per pdf piu' complessi e 
-# migliore generazine di res e anche miglior search (leggi file core/AboutEmbeddings_and_indexes.txt)
-
 
 def ingest_pdf(file_path: str, user_id: str):
-    # PDF-aware chunking. (✔️ è uno step di normalizzazione strutturale prima della semantica) 
-    # Il PDF-aware chunking non cerca ancora di capire il significato (Abstract, Introduction, ecc.)
-    # ma rispetta la struttura fisica del PDF (pagine,paragrafi, line break, layout)
+    
     try:
         print('user_id = ', user_id)
     # 1️⃣ Carica PDF
-        loader = PyPDFLoader(file_path) # PyPDFLoader si assicura che  che ogni Document(docs sotto) è UNA pagina del pdf la quale poi viene  applicato il chunking
-        docs = loader.load() # ogni docs equivale a una pagina del pdf. poi sotto per ognuna di queste pagine facciamo il chung di 800 caratteri 
-    #    print('docs here:', docs) 
-#      docs = [
-       #   Document(page_content=(text della pagina_0), metadata={"page": 0}),
-       #   Document(page_content=(text della pagina_1), metadata={"page": 1),
-       #   Document(page_content=(text della pagina_2), metadata={"page": 2),
-       #   ...
-       # ]
-
+        loader = PyPDFLoader(file_path) 
+        docs = loader.load() # docs = raccolta in formato Document di tutte la pagine del pdf
+          #   /-------------/
        # 2️⃣ Chunking
-        splitter = RecursiveCharacterTextSplitter(
-           chunk_size=800, # 1 chunk = 800 caratteri (130–160 parole) Un PDF universitario di 10–20 pagine di solito produce: 80–200 chunks circa
-           chunk_overlap=150
+        splitter = RecursiveCharacterTextSplitter( 
+           chunk_size=450, 
+           chunk_overlap=50 
          )
+        #   /-------------/
         
       #   Questa unisce solo quando la prima parte finisce con una lettera spezzata:
-        def clean_pdf_text(text: str) -> str:
+        def clean_pdf_text(text: str) -> str: # clean each pdf page
+
          # unisce parole spezzate da hyphen + newline
             text = re.sub(r"-\s*\n\s*", "", text)
 
-            # normalizza spazi multipli
-            text = re.sub(r"\s+", " ", text)
+            # parola spezzata da newline senza hyphen
+            text = re.sub(
+               r'(\b\w{1,3})\n(\w{2,}\b)',
+               r'\1\2',
+               text
+            )
 
-            return text.strip()
- 
-      # questa fun riconosce i paragrafi. Perche in un pdf standard, i paragrafi sono separati quasi sempre da 
-      # "doppio capo"(1 volta Ctrl+Enter), "doppio capo"(2 volte Ctrl+Enter), 
-      # oppure da piu volte (N volte Ctrl+Enter). questo viene catturato dal re.split(r"\n\s*\n", text), e cosi
-      # sappiamo dove fare il chunking per paragrafo 
-      # Quindi questo detta la fine di un paragrafo e una separazione logica
-        def split_into_paragraphs(text: str) -> list[str]: 
-             return [p.strip() for p in re.split(r"\n\s*\n", text) if p.strip()]
-    
-        all_chunks = [] # stores all paragaph chunks of each pdf page
+            return text
         
-          # 🔴 PAGE OVERLAP QUI
-        page_windows = build_page_windows(docs, window_size=2) # quest funzione crea nuovi Document
-        # cosi uniamo i docs: [pagina0,pagina1],[pagina1,pagina2].... guarda la desription nel file della fun
-        # questo e' il return :
-      #   page_windows = [
-      #     Document(pagine 0–1),
-      #     Document(pagine 1–2),
-      #     Document(pagine 2–3),
-      #      ...
-      #    ]. In poche parole, in questa funzione passiamo ogni docs a questa funzione,
-      #  dove qui uniamo a coppia(page:(0,1),(1,2),(2,3),(3,4)) i "text data" delle pagine del pdf(che si trovano in: docs.page_content),
-      #  e poi creaiamo i metadata per ognuna di queste pagine accoppiate queste pagine accoppiate 
+      #   /-------------/
+
+        # print('docs here =', docs)
+
+        # def split_into_paragraphs(text):
+
+        #     # Unisci line break interni (righe spezzate)
+        #     text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
+
+        #     # Dividi su doppio newline
+        #     paragraphs = re.split(r'\n\s*\n', text)
+
+        #     # Se ancora è uno solo, fallback intelligente
+        #     if len(paragraphs) == 1:
+        #         paragraphs = re.split(r'(?<=\.)\s+(?=[A-ZÀÈÉÌÒÙ])', text)
         
-        for window_doc in page_windows: 
-            # e qui facciamo lo split dei paragrafi che si trovano entro le "pagine accoppiate" 
-            # create nella var page_windows. Tutto questo serve a prevenire il problema della "troncatura
-            # del paragrafo", nel caso un paragrafo e' sparso in piu' pagine (ad esempio mezzo paragrafo si trova
-            # alla fine della pagina tre e l'altro mezzo all inizio della pagina 4). questo potrebbe creare
-            # chunks non proprio semantici, perche senza questa tecnicha di "page overlap", non ci sarebbe 
-            # overlapp tra in questo paragrafo, portanto "confusione" dovuta alla possibile mancanza di semanticita'
-            # e quindi "possibili bad retrival"
-            paragraphs = split_into_paragraphs(window_doc.page_content) # splittiamo i paragrafi all interno delle pagine pdf          
-           
-           
+        #     return [p.strip() for p in paragraphs if p.strip()]
 
-            for i, paragraph in enumerate(paragraphs): # trasformare ogni paragrafo qui sotto in un Document, con i metadati della page del pdf (page, section, document). ottimo per metadati e per poter fare semantic chunking
-                 
-                 # call the function that clears the paragraph tho avoid fractured words(teach ers) that will not be good storing in 
-                 # pinecone because it can be bad for the semantic search on the db
-                 clean_parag_text = clean_pdf_text(paragraph)
-            #   A cosa serve creare para_doc?
-            #   1) trasformare ogni paragrafo(paragraph) in una unità indipendente
-            #   2) mantenere numero di pagina e posizione del paragrafo nella pagina (per i metadati credo)
-            # Cosi' non spezzi mai un paragrafo a metà, e il chunking successivo è più pulito
-                 para_doc = Document(
-                     page_content=clean_parag_text, # il paragrafo ricavato dalla function paragraph.(i chunks con i dati)
-                     metadata={
-                        **window_doc.metadata, # i metadati descritto nella func build_page_windows. 
-                        # {"page_start": 3,"page_end": 4,"source": "file.pdf"} 
-                        # questi metadati di dicono dove si trova il chunk del paragrafo, cosi, 
-                        # se questo chunk si estende su piu' pagine, e' correttamente riportato nei metadati
-                        "paragraph_index": i 
-                     }
-                  )
 
-          ## facciamo i chunks di ognuno di questi singoli paragrafi paginatizati con para_doc.
-          # se è corto → 1 chunk
-          # se è lungo → più chunk (800 char, overlap 150)
-                 para_chunks = splitter.split_documents([para_doc])
-        #    pushamo questi chunk finali alla lista globale all_chunks ( in js = all_chunks.push(para_chunks))
+        # def split_into_paragraphs(text):
+
+        #     # 1️⃣ Prima NON distruggere tutti i newline
+        #     text = text.strip()
+
+        #     # 1️⃣ Unisci line-break interni (righe spezzate)
+        #     text = re.sub(r'(?<!\.)\n(?=[a-zàèéìòù])', ' ', text)
+
+        #     # 2️⃣ Split quando:
+        #     # - fine frase
+        #     # - newline
+        #     # - riga che inizia con maiuscola
+        #     paragraphs = re.split(
+        #         r'\n\s*\n|(?<=\.)\n(?=[A-ZÀÈÉÌÒÙ])',
+        #         text
+        #     )
+
+        #     cleaned=[]
+
+            
+        #     for p in paragraphs:
+        #         p = p.strip()
+
+        #         # 3️⃣ Se blocco contiene più righe tipo titolo/autore, separale
+        #         lines = p.split('\n')
+      
+        #         if len(lines) <= 1:
+        #             cleaned.append(p)
+        #         else:
+        #             for line in lines:
+        #                 line = line.strip()
+        #                 if line:
+        #                     cleaned.append(line)
+      
+        #     return cleaned
+
+        # def split_into_paragraphs(text):
+        #      # Unisci linee spezzate
+        #      text = re.sub(r'\n(?=[a-zàèéìòù])', ' ', text)
+
+        #      # Poi dividi sui veri paragrafi
+        #      paragraphs = re.split(r'\n\s*\n', text)
+
+        #      return [p.strip() for p in paragraphs if p.strip()]
+
+        #   /-------------/
+         
+        # splittiamo solo se:
+        # punto + newline + Maiuscola
+        # + riga relativamente corta (< 80 caratteri prima del prossimo newline)
+        def split_into_paragraphs(text):
+
+            text = text.strip()
+        
+            # 1️⃣ Unisci line-break interni (ma NON dopo punto)
+            text = re.sub(r'(?<!\.)\n(?=[a-zàèéìòù])', ' ', text)
+
+            # 2️⃣ Trasforma linee composte solo da simboli in doppio newline
+               # Esempio: "* * *"  oppure  "***"  oppure "---"
+            text = re.sub(
+                r'\n\s*[^A-Za-z0-9À-ÖØ-öø-ÿ]+\s*\n',
+                '\n\n',
+                text
+            )
+        
+            # 2️⃣ Split principale (PDF classici)
+            paragraphs = re.split(r'\n\s*\n', text)
+        
+            refined = []
+        
+            for p in paragraphs:
+                p = p.strip()
+        
+                # 3️⃣ Split secondario SOLO se sembra vero nuovo paragrafo
+                sub_paragraphs = re.split(
+                    r'(?<=\.)\n(?=[A-ZÀÈÉÌÒÙ][^\.]{0,80}\n)',
+                    p
+                )
+        
+                for sp in sub_paragraphs:
+                    refined.append(sp.strip())
+        
+            return [p for p in refined if p]
+
+
+
+        all_chunks = []
+        
+        clean_paragraph_docs = [] 
+        
+
+        for page_idx, doc in enumerate(docs): 
+            cleaned_pdf_text = clean_pdf_text(doc.page_content)
+            paragraphs = split_into_paragraphs(cleaned_pdf_text) # non sempre riconosce i paragrafi se 
+
+            # print('paragraphs =', paragraphs)
+
+            # print('------------')
+            # il pdf e' fatto male. Ques
+            
+            paragraph_docs = [ # i documenti dei paragrafi (o blocco pagina intero se paragrafi non esistono), per ogni pagina del pdf
+                Document(
+                    page_content=para,
+                    metadata={
+                       "page": page_idx,
+                       "page_start": page_idx,
+                       "page_end": page_idx,
+                       "paragraph_index": i
+                }
+               )
+               for i, para in enumerate(paragraphs)
+            ]
+
+            # 3️⃣ merge cross-page in-line
+            paragraph_docs = merge_broken_sentences(paragraph_docs) # Guarda se l’ULTIMO CHUNK 
+            # finisce con punteggiatura forte e se il next inizia con una maiuscola. In tal caso unisce questi chunk. Se non
+            # MAX_MERGE_LEN questo chunk puo' diventare davvero grande. (Non importa se è fine pagina o è metà pagina). questa pratica
+            # Aumenta logica semantica tra i chunks e crea unisce 2 chunks per un massimo di 900 chars
+
+            # 4️⃣ split in small chunks con overlap e append diretto in clean_paragraph_docs
+            for para_doc in paragraph_docs:
+                text_len = len(para_doc.page_content)
+
+                if text_len > 450:
+                    # split con il tuo splitter (gestisce max_chars + overlap)
+                    small_chunks = splitter.split_documents([para_doc])
+                    for chunk in small_chunks:
+                        # aggiorniamo metadata se vuoi, qui manteniamo quello originale
+                        clean_paragraph_docs.append(chunk)
+                else:
+                    # chunk corto rimane così com'è. Qui non abbiamo bisogno di overlap perche' se' il chunk e <130 chars verra' merged
+                    # nella fun pre_merge_small_paragraphs, se invece e' > 130 e < 450, ed simile al suo next chunk, questi verranno comunque merged  
+                    # infine, se non se questo small chunk non viene merged in questi due casi, puo' venir 'merged' alla fine in "post_merge_semantic_small_chunks"
+                    # cerchiamo in piu' modi logici di unire i piccoli chunks perche potrebbero creare embeddings
+                    # inutili e dannosi per il nostro rag app
+                    clean_paragraph_docs.append(para_doc)       
+   
+
+        clean_paragraph_docs = pre_merge_small_paragraphs( 
+            clean_paragraph_docs, 
+            min_chars=130,
+            max_chars=600
+        )
+
+        # print('clean_paragraph_docs =',clean_paragraph_docs) # 83 chunks totali
+
+        CROSS_PAGE_OVERLAP = 50
+        # print(len('len here:',clean_paragraph_docs))
+        # extra page_overlap for cross_page only
+        for i in range(1, len(clean_paragraph_docs)):
+            current_doc = clean_paragraph_docs[i] # il next chunk rispetto a prev_doc chunk
+            prev_doc = clean_paragraph_docs[i - 1] # il chunk prima di current_doc
+            # print('current page start =', current_doc.metadata.get("page_start"))
+            # print('current_doc.metadata.get("page_end"):   =', current_doc.metadata.get("page_start"))
+            #  Caso cross-page. Se per esempio page_start = 1 e page_end = 2
+            if prev_doc.metadata.get("page_start") != current_doc.metadata.get("page_end"):
+               
+               # Prendiamo gli ultimi 50 chars del precedente
+               prefix = prev_doc.page_content[-CROSS_PAGE_OVERLAP:]
+            
+               # Evitiamo doppie duplicazioni
+               if not current_doc.page_content.startswith(prefix):
+                
+                   current_doc.page_content = prefix + " " + current_doc.page_content
+               
+
+          
+        # print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
+        
+    #    # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
+    #    # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
+    #    # piu' correlati alla query dello user (la domanda che l'utente fa' al llm dopo aver caricato il pdf)
+    #    # e cosi' llm andra' a formulare riposte soddisfacenti(retrival)
+
+        semantic_chunks = semantic_chunk_paragraphs( 
+            paragraph_docs=clean_paragraph_docs, 
+                
+            embeddings_model=embeddings_model, 
+            sim_threshold=0.65, # sweet spot per fare merge dei chunks
+            max_chars = 1200 
+            )
+        
+        print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
+        
+        
+
+        semantic_chunks = post_merge_semantic_small_chunks( 
+            semantic_chunks,
+            min_chars=250,  
+            max_chars=1200  # 1200 chars è un buon limite per mantenere la precisione degli embeddings, ma puoi regolarlo in base alle tue esigenze specifiche
+            )
+
+        # print('post semantic_chunks here = ', semantic_chunks ) # 53 chunks
+
+       
+        total_semantic_chars_before = sum(len(c.page_content) for c in semantic_chunks)
+        total_semantic_chars_after_final_merge = sum(len(c.page_content) for c in semantic_chunks)
+
+        
+
+        print(f"Total chars in semantic chunks before final merge: {total_semantic_chars_before}")
+        print(f"Total chars in semantic chunks after final merge: {total_semantic_chars_after_final_merge}")
+
+    #     # #  # Step 3: ulteriore split per lunghezza se necessario
+        MAX_FINAL_CHUNK_CHARS = 1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione
+
+        for chunk in semantic_chunks:
+            if len(chunk.page_content) <= MAX_FINAL_CHUNK_CHARS: # nel caso post_merge_small_chunks facesse sforare
+             
+                 all_chunks.append(chunk)
+                #  all_chunks.extend(para_chunks) # ERRATO. chunk è un Document, non una lista.
+                # extend(chunk) prova a iterare su chunk → risultato non definito / corrotto.
+            else:  # never reach this else for now because all chunks are < 1200 chars, ma è una buona safety check comunque
+                 print(f"⚠️ Chunk too long ({len(chunk.page_content)} chars), splitting further...")
+                 para_chunks = splitter.split_documents([chunk])
                  all_chunks.extend(para_chunks)
-        
-         # 🧼 CLEANUP: unione chunk piccoli
-        all_chunks = merge_small_chunks(all_chunks, min_size=250) # negli output print, non vediamo
-        # paragraph_index = 0 (titolo della prima pagina )
-        # paragraph_index = 1 (la parte "abstract")
-        # paragraph_index = 2 (e' l'attuale testo dell' abstract)
-        # questo perche lo abbiamo specificato in merge_small_chunks, che se i paragrafi sono piccoli,
-        # i dati di questo paragrafo lo uniamo al primo chunk che e' > a 250 caratteri, in questo caso il
-        # chunk dove e descritto "abstract". infatti questo chunk contiene titolo, "abstract", e il text
-        # di "abstract". ed e' il paragraph_index 0  
- 
-        # debugg
-      #   for i, c in enumerate(all_chunks[:8]): # prendi 5 chunks
-      #        print(f"CHUNK #{i}")
-      #        print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
-      #        print("PARAGRAPH:", c.metadata.get("paragraph_index"))
-      #        print("CHUNK LEN:", len(c.page_content))
-      #        print("TEXT:", c.page_content)#[:200])
-      #        print("-" * 50)
-      #        if len(c.page_content) < 200:
-      #            print("⚠️ SMALL CHUNK DETECTED")
+                
 
+    #     # #     #   debugg
+        for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
+             print(f"CHUNK #{i}")
+             print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
+             print("PARAGRAPH:", c.metadata.get("paragraph_index"))
+             print("CHUNK LEN:", len(c.page_content))
+             print("TEXT:", c.page_content)
+             print("-" * 50)
+             if len(c.page_content) < 200:
+                 print("⚠️ SMALL CHUNK DETECTED")
+    #     #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
      
+    #    # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
+    #     vectorstore = PineconeVectorStore( # Pinecone.from_existing_index(
+    #        index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
+    #        embedding=embeddings_model, # trasforma i chunks in embeddings
+    #        namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
+    #      ) 
 
-       # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
-        vectorstore = PineconeVectorStore( # Pinecone.from_existing_index(
-           index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
-           embedding=embeddings_model, # text-embedding-3-small (lo cambieremo con large. ricorda di creare un nuovo index settato per large)
-        # embedding trasforma Ogni chunk in un vettore numerico "semantico" grazie al modello text-embedding-3-small di OpenAIEmbeddings:
-        # (model="text-embedding-3-small") che e' stato allenato apposta. ricorda che text-embedding-3-large e' migliore, e che in futuro
-        #  andremo ad usare questo
-           namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
-         ) 
+    #    # 4️⃣ Inserisci chunks
+    #     vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
 
-       # 4️⃣ Inserisci chunks
-        vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
-
-        return {"message": f"{len(all_chunks)} chunks ingested for user {user_id}"}
+    #     return {"message": f"{len(all_chunks)} chunks ingested for user {user_id}"}
     
     
    # 🧹 Pulizia file temporanei (best practice). rimuoviamo i file gia caricati in locale(C:\Users\ale\AppData\Local\Temp\tmpxxxx.pdf) in ingest.py
@@ -198,13 +326,4 @@ def ingest_pdf(file_path: str, user_id: str):
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)
-
-
-
-
- # Retrieval (similarity search):
-
-#  Quando lo user fa' la query su Pinecone, la query stessa viene trasformata in embedding dallo stesso modello che abbiamo usato per dare
-# gli embeddings dei chunks pdf (embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small")).  Dopo la trasformazione della query in embedding,
-# Pinecone(non il modello di openai) fa la ricerca per similarita' tra gli emb della query e quella dei chunks del pdf file(chiamata cosine similarit), 
 
