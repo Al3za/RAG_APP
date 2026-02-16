@@ -71,51 +71,103 @@ def pre_merge_small_paragraphs(
 # iniziale di 240 char, il che e' troppo piccolo, perche gli embeddings di chunks < 250 char possono causare imprecisione, e portano
 # il modello a confondersi, risultando in un possibile bad retrival
 
-def post_merge_semantic_small_chunks( # Con il mio setup attuale (base chunk: 450 chars e pre-merge <130 chars)   Nel 90–95% dei casi questa funzione
-        # non verra mai invocata
-    chunks,# i cleaned chunks, pre merged
-    min_chars=250, # sweet spot di default, per mergare i semantic chunks di questa grandezza 
-    max_chars=1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione e verrebbero
-    # annacquati da dati non rilevanti
+
+def post_merge_semantic_small_chunks(
+    chunks,
+    min_chars=250,
+    max_chars=1200
 ):
     if not chunks:
         return chunks
 
     merged = []
-    skip_next = False
+    i = 0
 
-    for i, chunk in enumerate(chunks):
-        if skip_next:
-            skip_next = False
+    while i < len(chunks):
+        current = chunks[i]
+        current_len = len(current.page_content)
+
+        # Se chunk abbastanza grande → mantieni
+        if current_len >= min_chars:
+            merged.append(current)
+            i += 1
             continue
 
-        chunk_len = len(chunk.page_content)
+        # Se ultimo elemento → mantieni
+        if i + 1 >= len(chunks):
+            merged.append(current)
+            break
 
-        if chunk_len >= min_chars:
-            merged.append(chunk)
-            continue
+        next_chunk = chunks[i + 1]
+        combined_len = current_len + len(next_chunk.page_content)
 
-        # prova a unire al successivo (preferito)
-        if i + 1 < len(chunks):
-            next_chunk = chunks[i + 1]
-            combined_len = chunk_len + len(next_chunk.page_content)
+        if combined_len <= max_chars:
+            new_text = current.page_content + " " + next_chunk.page_content
+            new_meta = current.metadata.copy()
 
-            if combined_len <= max_chars:
-                new_text = chunk.page_content + " " + next_chunk.page_content
-                new_meta = chunk.metadata.copy()
+            merged.append(
+                Document(page_content=new_text, metadata=new_meta)
+            )
 
-                merged.append(
-                    Document(page_content=new_text, metadata=new_meta)
-                )
-                skip_next = True # “NON fare merge a catena” — cosa significa davvero. 
-                # Questo evita di concatenare piu' small chunks. Solo 1 chunk < 250 char si puo' concatenare al precedente o al prossimo. 
-                # E consigliato concatenare massimo uno perche' se avessimo tanti piccoli chunks che si andrebbero a concatenare, si potrebbe 
-                # perdere semanticita', perche' ci sarebbe il rischio che stessimo mescolando informazioni di diversi chunk tra loro.
-                # per questo e' anche importante che ogni piccolo chunk sia unito solo con il chunk appena precedente o quello subito dopo, 
-                # questo perche' essendo vicini e' piu' probabile che questi condividano informazioni simili.
-                continue
-
-        # fallback: resta solo
-        merged.append(chunk)
+            i += 2  # salta esplicitamente entrambi. Qui diciamo  “NON fare merge a catena” — cosa significa davvero: 
+            # Questo evita di concatenare piu' small chunks. Solo 1 chunk < 250 char si puo' concatenare al precedente o al prossimo. 
+            # E consigliato concatenare massimo uno perche' se avessimo tanti piccoli chunks che si andrebbero a concatenare, si potrebbe 
+            # perdere semanticita', perche' ci sarebbe il rischio che stessimo mescolando informazioni di diversi chunk tra loro.
+            # per questo e' anche importante che ogni piccolo chunk sia unito solo con il chunk appena precedente o quello subito dopo, 
+            # questo perche' essendo vicini e' piu' probabile che questi condividano informazioni simili
+        else:
+            merged.append(current)
+            i += 1
 
     return merged
+
+
+# def post_merge_semantic_small_chunks( # Con il mio setup attuale (base chunk: 450 chars e pre-merge <130 chars)   Nel 90–95% dei casi questa funzione
+#         # non verra mai invocata
+#     chunks,# i cleaned chunks, pre merged
+#     min_chars=250, # sweet spot di default, per mergare i semantic chunks di questa grandezza 
+#     max_chars=1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione e verrebbero
+#     # annacquati da dati non rilevanti
+# ):
+#     if not chunks:
+#         return chunks
+
+#     merged = []
+#     skip_next = False
+
+#     for i, chunk in enumerate(chunks):
+#         if skip_next:
+#             skip_next = False
+#             continue
+
+#         chunk_len = len(chunk.page_content)
+
+#         if chunk_len >= min_chars:
+#             merged.append(chunk)
+#             continue
+
+#         # prova a unire al successivo (preferito)
+#         if i + 1 < len(chunks):
+#             next_chunk = chunks[i + 1]
+#             combined_len = chunk_len + len(next_chunk.page_content)
+
+#             if combined_len <= max_chars:
+#                 new_text = chunk.page_content + " " + next_chunk.page_content
+#                 new_meta = chunk.metadata.copy()
+
+#                 merged.append(
+#                     Document(page_content=new_text, metadata=new_meta)
+#                 )
+#                 skip_next = True # “NON fare merge a catena” — cosa significa davvero. 
+#                 # Questo evita di concatenare piu' small chunks. Solo 1 chunk < 250 char si puo' concatenare al precedente o al prossimo. 
+#                 # E consigliato concatenare massimo uno perche' se avessimo tanti piccoli chunks che si andrebbero a concatenare, si potrebbe 
+#                 # perdere semanticita', perche' ci sarebbe il rischio che stessimo mescolando informazioni di diversi chunk tra loro.
+#                 # per questo e' anche importante che ogni piccolo chunk sia unito solo con il chunk appena precedente o quello subito dopo, 
+#                 # questo perche' essendo vicini e' piu' probabile che questi condividano informazioni simili.
+#                 continue
+
+#         # fallback: resta solo
+#         merged.append(chunk)
+
+#     return merged
+

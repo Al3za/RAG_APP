@@ -244,7 +244,7 @@ def ingest_pdf(file_path: str, user_id: str):
                
 
           
-        print('pre_clean_paragraph_docs_ =',clean_paragraph_docs) # 83 chunks totali
+        # print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
         
     #    # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
     #    # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
@@ -261,6 +261,8 @@ def ingest_pdf(file_path: str, user_id: str):
         
         print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
         
+        
+
         semantic_chunks = post_merge_semantic_small_chunks( 
             semantic_chunks,
             min_chars=250,  
@@ -268,6 +270,15 @@ def ingest_pdf(file_path: str, user_id: str):
             )
 
         # print('post semantic_chunks here = ', semantic_chunks ) # 53 chunks
+
+       
+        total_semantic_chars_before = sum(len(c.page_content) for c in semantic_chunks)
+        total_semantic_chars_after_final_merge = sum(len(c.page_content) for c in semantic_chunks)
+
+        
+
+        print(f"Total chars in semantic chunks before final merge: {total_semantic_chars_before}")
+        print(f"Total chars in semantic chunks after final merge: {total_semantic_chars_after_final_merge}")
 
     #     # #  # Step 3: ulteriore split per lunghezza se necessario
         MAX_FINAL_CHUNK_CHARS = 1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione
