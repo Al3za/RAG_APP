@@ -34,7 +34,7 @@ def ingest_pdf(file_path: str, user_id: str):
         print('user_id = ', user_id)
     # 1️⃣ Carica PDF
         loader = PyPDFLoader(file_path) 
-        docs = loader.load() 
+        docs = loader.load() # docs = raccolta in formato Document di tutte la pagine del pdf
           #   /-------------/
        # 2️⃣ Chunking
         splitter = RecursiveCharacterTextSplitter( 
@@ -44,17 +44,23 @@ def ingest_pdf(file_path: str, user_id: str):
         #   /-------------/
         
       #   Questa unisce solo quando la prima parte finisce con una lettera spezzata:
-        def clean_pdf_text(text: str) -> str:
+        def clean_pdf_text(text: str) -> str: # clean each pdf page
+
          # unisce parole spezzate da hyphen + newline
             text = re.sub(r"-\s*\n\s*", "", text)
-            # normalizza spazi multipli
-            text = re.sub(r"\s+", " ", text)
 
-            return text.strip()
+            # parola spezzata da newline senza hyphen
+            text = re.sub(
+               r'(\b\w{1,3})\n(\w{2,}\b)',
+               r'\1\2',
+               text
+            )
+
+            return text
         
       #   /-------------/
 
-        print('docs here =', docs)
+        # print('docs here =', docs)
 
         # def split_into_paragraphs(text):
 
@@ -71,36 +77,104 @@ def ingest_pdf(file_path: str, user_id: str):
         #     return [p.strip() for p in paragraphs if p.strip()]
 
 
-        def split_into_paragraphs(text):
-             # Unisci linee spezzate
-             text = re.sub(r'\n(?=[a-zàèéìòù])', ' ', text)
+        # def split_into_paragraphs(text):
 
-             # Poi dividi sui veri paragrafi
-             paragraphs = re.split(r'\n\s*\n', text)
+        #     # 1️⃣ Prima NON distruggere tutti i newline
+        #     text = text.strip()
 
-             return [p.strip() for p in paragraphs if p.strip()]
+        #     # 1️⃣ Unisci line-break interni (righe spezzate)
+        #     text = re.sub(r'(?<!\.)\n(?=[a-zàèéìòù])', ' ', text)
+
+        #     # 2️⃣ Split quando:
+        #     # - fine frase
+        #     # - newline
+        #     # - riga che inizia con maiuscola
+        #     paragraphs = re.split(
+        #         r'\n\s*\n|(?<=\.)\n(?=[A-ZÀÈÉÌÒÙ])',
+        #         text
+        #     )
+
+        #     cleaned=[]
+
+            
+        #     for p in paragraphs:
+        #         p = p.strip()
+
+        #         # 3️⃣ Se blocco contiene più righe tipo titolo/autore, separale
+        #         lines = p.split('\n')
+      
+        #         if len(lines) <= 1:
+        #             cleaned.append(p)
+        #         else:
+        #             for line in lines:
+        #                 line = line.strip()
+        #                 if line:
+        #                     cleaned.append(line)
+      
+        #     return cleaned
+
+        # def split_into_paragraphs(text):
+        #      # Unisci linee spezzate
+        #      text = re.sub(r'\n(?=[a-zàèéìòù])', ' ', text)
+
+        #      # Poi dividi sui veri paragrafi
+        #      paragraphs = re.split(r'\n\s*\n', text)
+
+        #      return [p.strip() for p in paragraphs if p.strip()]
 
         #   /-------------/
+         
+        # splittiamo solo se:
+        # punto + newline + Maiuscola
+        # + riga relativamente corta (< 80 caratteri prima del prossimo newline)
+        def split_into_paragraphs(text):
+
+            text = text.strip()
+        
+            # 1️⃣ Unisci line-break interni (ma NON dopo punto)
+            text = re.sub(r'(?<!\.)\n(?=[a-zàèéìòù])', ' ', text)
+
+            # 2️⃣ Trasforma linee composte solo da simboli in doppio newline
+               # Esempio: "* * *"  oppure  "***"  oppure "---"
+            text = re.sub(
+                r'\n\s*[^A-Za-z0-9À-ÖØ-öø-ÿ]+\s*\n',
+                '\n\n',
+                text
+            )
+        
+            # 2️⃣ Split principale (PDF classici)
+            paragraphs = re.split(r'\n\s*\n', text)
+        
+            refined = []
+        
+            for p in paragraphs:
+                p = p.strip()
+        
+                # 3️⃣ Split secondario SOLO se sembra vero nuovo paragrafo
+                sub_paragraphs = re.split(
+                    r'(?<=\.)\n(?=[A-ZÀÈÉÌÒÙ][^\.]{0,80}\n)',
+                    p
+                )
+        
+                for sp in sub_paragraphs:
+                    refined.append(sp.strip())
+        
+            return [p for p in refined if p]
+
+
 
         all_chunks = []
         
         clean_paragraph_docs = [] 
-
-          # 🔴 PAGE OVERLAP QUI
-        # page_windows = build_page_windows(docs, window_size=2) 
         
 
-        for page_idx, doc in enumerate(docs): # docs = raccolta in formato Document di tutte la pagine del pdf
-             # doc = i paragrafi di 1 pagina intera del pdf o se non esistono paragrafi, doc= all'intera pagina 
-             # (loopiamo su tutte le pagine per fare chunking sui paragrafi(se ci sono) di ogni pagina
-             # se non ci sono paragrafi e la pagina e' formata da un blocco unico di testo, facciamo chunking sulla pagina stessa
-            # print(repr(doc.page_content))
-            # Controlliamo se una pagina pdf contenga paragrafi o se e' un singolo blocco di testo
-            # e' possibile che non ci sia nemmeno un paragrafo nella pagina pdf che stiamo analizando
-            # e sotto preveniamo che non creiamo un document che equivale un intera pagina
-            paragraphs = split_into_paragraphs(doc.page_content) # non sempre riconosce i paragrafi se 
+        for page_idx, doc in enumerate(docs): 
+            cleaned_pdf_text = clean_pdf_text(doc.page_content)
+            paragraphs = split_into_paragraphs(cleaned_pdf_text) # non sempre riconosce i paragrafi se 
 
-            # print(paragraphs)
+            # print('paragraphs =', paragraphs)
+
+            # print('------------')
             # il pdf e' fatto male. Ques
             
             paragraph_docs = [ # i documenti dei paragrafi (o blocco pagina intero se paragrafi non esistono), per ogni pagina del pdf
@@ -159,28 +233,23 @@ def ingest_pdf(file_path: str, user_id: str):
             # print('current_doc.metadata.get("page_end"):   =', current_doc.metadata.get("page_start"))
             #  Caso cross-page. Se per esempio page_start = 1 e page_end = 2
             if prev_doc.metadata.get("page_start") != current_doc.metadata.get("page_end"):
-            #    print('current_doc here=', current_doc)
-            #    print('prev_doc here=', prev_doc)
                
                # Prendiamo gli ultimi 50 chars del precedente
                prefix = prev_doc.page_content[-CROSS_PAGE_OVERLAP:]
-            #    print('prefix hit =', prefix)
+            
                # Evitiamo doppie duplicazioni
                if not current_doc.page_content.startswith(prefix):
-                #    print('not current_doc hit')
+                
                    current_doc.page_content = prefix + " " + current_doc.page_content
-                #    prev_doc.metadata["page_end"] = current_doc.metadata.get("page_end")
+               
 
-        
-        
-        # print('clean_paragraph_docs_overflow =',clean_paragraph_docs) #  83 chunks totali
           
-        # print('clean_paragraph_docs =',clean_paragraph_docs) # 83 chunks totali
+        print('pre_clean_paragraph_docs_ =',clean_paragraph_docs) # 83 chunks totali
         
-       # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
-       # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
-       # piu' correlati alla query dello user (la domanda che l'utente fa' al llm dopo aver caricato il pdf)
-       # e cosi' llm andra' a formulare riposte soddisfacenti(retrival)
+    #    # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
+    #    # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
+    #    # piu' correlati alla query dello user (la domanda che l'utente fa' al llm dopo aver caricato il pdf)
+    #    # e cosi' llm andra' a formulare riposte soddisfacenti(retrival)
 
         semantic_chunks = semantic_chunk_paragraphs( 
             paragraph_docs=clean_paragraph_docs, 
@@ -190,17 +259,17 @@ def ingest_pdf(file_path: str, user_id: str):
             max_chars = 1200 
             )
         
-        # print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
+        print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
         
         semantic_chunks = post_merge_semantic_small_chunks( 
             semantic_chunks,
             min_chars=250,  
-            max_chars=1200 
+            max_chars=1200  # 1200 chars è un buon limite per mantenere la precisione degli embeddings, ma puoi regolarlo in base alle tue esigenze specifiche
             )
 
         # print('post semantic_chunks here = ', semantic_chunks ) # 53 chunks
 
-        # #  # Step 3: ulteriore split per lunghezza se necessario
+    #     # #  # Step 3: ulteriore split per lunghezza se necessario
         MAX_FINAL_CHUNK_CHARS = 1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione
 
         for chunk in semantic_chunks:
@@ -209,13 +278,13 @@ def ingest_pdf(file_path: str, user_id: str):
                  all_chunks.append(chunk)
                 #  all_chunks.extend(para_chunks) # ERRATO. chunk è un Document, non una lista.
                 # extend(chunk) prova a iterare su chunk → risultato non definito / corrotto.
-            else:  # never reach this else for now
-                 
+            else:  # never reach this else for now because all chunks are < 1200 chars, ma è una buona safety check comunque
+                 print(f"⚠️ Chunk too long ({len(chunk.page_content)} chars), splitting further...")
                  para_chunks = splitter.split_documents([chunk])
                  all_chunks.extend(para_chunks)
                 
 
-        # #     #   debugg
+    #     # #     #   debugg
         for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
              print(f"CHUNK #{i}")
              print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
@@ -225,7 +294,7 @@ def ingest_pdf(file_path: str, user_id: str):
              print("-" * 50)
              if len(c.page_content) < 200:
                  print("⚠️ SMALL CHUNK DETECTED")
-        #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
+    #     #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
      
     #    # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
     #     vectorstore = PineconeVectorStore( # Pinecone.from_existing_index(
