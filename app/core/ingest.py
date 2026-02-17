@@ -236,8 +236,8 @@ def ingest_pdf(file_path: str, user_id: str):
         # print('post semantic_chunks here = ', semantic_chunks ) # 53 chunks
 
        
-        total_semantic_chars_before = sum(len(c.page_content) for c in semantic_chunks)
-        total_semantic_chars_after_final_merge = sum(len(c.page_content) for c in semantic_chunks)
+        # total_semantic_chars_before = sum(len(c.page_content) for c in semantic_chunks)
+        # total_semantic_chars_after_final_merge = sum(len(c.page_content) for c in semantic_chunks)
 
         
 
