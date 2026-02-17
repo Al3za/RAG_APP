@@ -65,7 +65,8 @@ If relevant information appears in multiple parts, combine them into a single,
 coherent explanation.
 
 Do NOT use external knowledge.
-If the answer cannot be determined from the context, say: "I don't know."
+If the context does not explicitly support the answer, say "I don't know."
+Do not infer beyond what is directly stated.
 
 Context:
 {context}
@@ -81,26 +82,37 @@ Question:
 
 
 def ask_question(user_id: str, question: str):
-    print('user_id =', user_id)
-    # 1️⃣ Vector store (index ESISTENTE)
+
     vectorstore = PineconeVectorStore(
-        index=index, # pc.Index(index_name). l'indez Dove vengono salvati i dati(emb chunks) di ogni user
-        embedding=embeddings_model, # per fare Retrieval (similarity search) tra query e embedded chunks in pinecone
-        namespace=user_id, # fondamentale per trovare i chunks dello usare, e quindi avere corretto data retriving
-        text_key="text" # text e' la key presente nel metadata degli embedded chunks in pinecone, dove risiedono i dati di ogni chunks
+        index=index,
+        embedding=embeddings_model, 
+        namespace=user_id,
+        text_key="text"
     )
     
-    print(' =', user_id)
+    # print(' =', user_id)
+
 
     retriever = vectorstore.as_retriever(
-        search_type="mmr",
-        search_kwargs={ # le prime quattro caselle con piu' alta similarita semantica con la query
-            "k": 5, # solo una casella sono pochi dati, ma avendo le 4 piu' " semanticamente simili" alla query, lo llm definito sopra ci creera' una response piu' robuusta e' dettagliata, con i daty di "text" delle prime 4 caselle
-            # "filter": {"user_id": user_id} # filtra tra i pdf chunks dello user specifico, altrimenti il modello leggerebbe gli pdf di tutti gli users
-            "fetch_k": 15,
-            "lambda_mult":0.5
+        search_type="mmr", 
+        search_kwargs={ 
+            "k": 5, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.)
+            # "filter": {"user_id": user_id}, 
+            "fetch_k": 15, 
+            "lambda_mult":0.7 # (0.5 per iniziare). 0.7 porta più peso alla similarità, 
+            # meno alla diversità e spesso migliora precisione.
         }
-    )
+    ) 
+    
+    # docs_debugg = retriever.invoke(question)
+
+    # print("\n--- CHUNKS RECUPERATI ---\n")
+    # for i, d in enumerate(docs_debugg):
+    #     print(f"\nChunk {i+1}")
+    #     print("Page:", d.metadata.get("page"))
+    #     print("Paragraph index:", d.metadata.get("paragraph_index"))
+    #     print(d.page_content[:500])
+
 
        # 2️⃣ RAG chain moderna (LCEL)
     rag_chain = (
