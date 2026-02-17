@@ -102,7 +102,7 @@ def ask_question(user_id: str, question: str):
     retriever = vectorstore.as_retriever(
         search_type="mmr", 
         search_kwargs={ 
-            "k": 8, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.)
+            "k": 9, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.)
             # "filter": {"user_id": user_id}, 
             "fetch_k": 15, 
             "lambda_mult":0.8 # (0.5 per iniziare). 0.7 porta più peso alla similarità, 
@@ -124,7 +124,7 @@ def ask_question(user_id: str, question: str):
 
         print("Score:", score)
 
-        if score >= 0.58: # 0.75 è un buon punto iniziale. 0.78–0.80 è più conservativo
+        if score >= 0.55: # 0.75 è un buon punto iniziale. 0.78–0.80 è più conservativo
             filtered_docs.append(doc) # solo i chunk importanti. Ora invece di 5 chunk, avremo magari
             # solo 3, ma saranno molto rilevanti rispetto alla query
 
