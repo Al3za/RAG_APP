@@ -58,71 +58,6 @@ def ingest_pdf(file_path: str, user_id: str):
 
             return text
         
-      #   /-------------/
-
-        # print('docs here =', docs)
-
-        # def split_into_paragraphs(text):
-
-        #     # Unisci line break interni (righe spezzate)
-        #     text = re.sub(r'(?<!\n)\n(?!\n)', ' ', text)
-
-        #     # Dividi su doppio newline
-        #     paragraphs = re.split(r'\n\s*\n', text)
-
-        #     # Se ancora è uno solo, fallback intelligente
-        #     if len(paragraphs) == 1:
-        #         paragraphs = re.split(r'(?<=\.)\s+(?=[A-ZÀÈÉÌÒÙ])', text)
-        
-        #     return [p.strip() for p in paragraphs if p.strip()]
-
-
-        # def split_into_paragraphs(text):
-
-        #     # 1️⃣ Prima NON distruggere tutti i newline
-        #     text = text.strip()
-
-        #     # 1️⃣ Unisci line-break interni (righe spezzate)
-        #     text = re.sub(r'(?<!\.)\n(?=[a-zàèéìòù])', ' ', text)
-
-        #     # 2️⃣ Split quando:
-        #     # - fine frase
-        #     # - newline
-        #     # - riga che inizia con maiuscola
-        #     paragraphs = re.split(
-        #         r'\n\s*\n|(?<=\.)\n(?=[A-ZÀÈÉÌÒÙ])',
-        #         text
-        #     )
-
-        #     cleaned=[]
-
-            
-        #     for p in paragraphs:
-        #         p = p.strip()
-
-        #         # 3️⃣ Se blocco contiene più righe tipo titolo/autore, separale
-        #         lines = p.split('\n')
-      
-        #         if len(lines) <= 1:
-        #             cleaned.append(p)
-        #         else:
-        #             for line in lines:
-        #                 line = line.strip()
-        #                 if line:
-        #                     cleaned.append(line)
-      
-        #     return cleaned
-
-        # def split_into_paragraphs(text):
-        #      # Unisci linee spezzate
-        #      text = re.sub(r'\n(?=[a-zàèéìòù])', ' ', text)
-
-        #      # Poi dividi sui veri paragrafi
-        #      paragraphs = re.split(r'\n\s*\n', text)
-
-        #      return [p.strip() for p in paragraphs if p.strip()]
-
-        #   /-------------/
          
         # splittiamo solo se:
         # punto + newline + Maiuscola
@@ -141,6 +76,10 @@ def ingest_pdf(file_path: str, user_id: str):
                 '\n\n',
                 text
             )
+
+            # rimuovi duplicati
+            # text = re.sub(r'(\b.+?\b)( \1)+', r'\1', text) puoi' provarlo piu' avanti, anche se 
+            # duplicati =< 80 chars non sono un problema per embeddings o llm 
         
             # 2️⃣ Split principale (PDF classici)
             paragraphs = re.split(r'\n\s*\n', text)
@@ -171,11 +110,6 @@ def ingest_pdf(file_path: str, user_id: str):
         for page_idx, doc in enumerate(docs): 
             cleaned_pdf_text = clean_pdf_text(doc.page_content)
             paragraphs = split_into_paragraphs(cleaned_pdf_text) # non sempre riconosce i paragrafi se 
-
-            # print('paragraphs =', paragraphs)
-
-            # print('------------')
-            # il pdf e' fatto male. Ques
             
             paragraph_docs = [ # i documenti dei paragrafi (o blocco pagina intero se paragrafi non esistono), per ogni pagina del pdf
                 Document(
@@ -259,7 +193,7 @@ def ingest_pdf(file_path: str, user_id: str):
             max_chars = 1200 
             )
         
-        print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
+        # print('semantic_chunks here = ', semantic_chunks ) # 64 chunk (da 83 a 64 perche alcuni si sono uniti perche' semanticamente simili)
         
         
 
@@ -272,13 +206,13 @@ def ingest_pdf(file_path: str, user_id: str):
         # print('post semantic_chunks here = ', semantic_chunks ) # 53 chunks
 
        
-        total_semantic_chars_before = sum(len(c.page_content) for c in semantic_chunks)
-        total_semantic_chars_after_final_merge = sum(len(c.page_content) for c in semantic_chunks)
+        # total_semantic_chars_before = sum(len(c.page_content) for c in semantic_chunks)
+        # total_semantic_chars_after_final_merge = sum(len(c.page_content) for c in semantic_chunks)
 
         
 
-        print(f"Total chars in semantic chunks before final merge: {total_semantic_chars_before}")
-        print(f"Total chars in semantic chunks after final merge: {total_semantic_chars_after_final_merge}")
+        # print(f"Total chars in semantic chunks before final merge: {total_semantic_chars_before}")
+        # print(f"Total chars in semantic chunks after final merge: {total_semantic_chars_after_final_merge}")
 
     #     # #  # Step 3: ulteriore split per lunghezza se necessario
         MAX_FINAL_CHUNK_CHARS = 1200 # numero massimo di chars per semantic_chunks. Oltre, gli embeddings creati perderebbero di precisione
@@ -296,28 +230,28 @@ def ingest_pdf(file_path: str, user_id: str):
                 
 
     #     # #     #   debugg
-        for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
-             print(f"CHUNK #{i}")
-             print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
-             print("PARAGRAPH:", c.metadata.get("paragraph_index"))
-             print("CHUNK LEN:", len(c.page_content))
-             print("TEXT:", c.page_content)
-             print("-" * 50)
-             if len(c.page_content) < 200:
-                 print("⚠️ SMALL CHUNK DETECTED")
+        # for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
+        #      print(f"CHUNK #{i}")
+        #      print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
+        #      print("PARAGRAPH:", c.metadata.get("paragraph_index"))
+        #      print("CHUNK LEN:", len(c.page_content))
+        #      print("TEXT:", c.page_content)
+        #      print("-" * 50)
+        #      if len(c.page_content) < 200:
+        #          print("⚠️ SMALL CHUNK DETECTED")
     #     #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
      
-    #    # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
-    #     vectorstore = PineconeVectorStore( # Pinecone.from_existing_index(
-    #        index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
-    #        embedding=embeddings_model, # trasforma i chunks in embeddings
-    #        namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
-    #      ) 
+       # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
+        vectorstore = PineconeVectorStore( 
+           index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
+           embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
+           namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
+         ) 
 
-    #    # 4️⃣ Inserisci chunks
-    #     vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
+       # 4️⃣ Inserisci chunks
+        vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
 
-    #     return {"message": f"{len(all_chunks)} chunks ingested for user {user_id}"}
+        return {"message": f"{len(all_chunks)} chunks ingested for user {user_id}"}
     
     
    # 🧹 Pulizia file temporanei (best practice). rimuoviamo i file gia caricati in locale(C:\Users\ale\AppData\Local\Temp\tmpxxxx.pdf) in ingest.py

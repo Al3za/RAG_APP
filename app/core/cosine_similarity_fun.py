@@ -67,7 +67,7 @@ def semantic_chunk_paragraphs(paragraph_docs,
         # al primo turn del loop, confrontiamo l'embeddings del primo emb chunk con il secondo
         # emb chunk, ricavato dall'array di emb chunks definito in paragraph_embeddings[i]
         sim = cosine_similarity(current_embedding, next_embedding)  # aggiornato continuamente ad ogni turn del loop, e cambia diversamente in base se i chunks
-        print(f"SIM {i-1}->{i}: {sim:.3f}")
+        # print(f"SIM {i-1}->{i}: {sim:.3f}")
         #  sono "stati uniti" o meno. Se sono stati uniti i chunks allora "current_embedding"
         # aggiornato e' uguale risultera all'unione di questi embeddings diviso diviso 2.
         # E quindi il loop procede e sempre nella funzione cosine_similarity calcoleremo la similarita' 
