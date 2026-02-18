@@ -32,7 +32,7 @@ embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small")
 def ingest_pdf(file_path: str, user_id: str):
     
     try:
-        print('user_id = ', user_id)
+        # print('user_id = ', user_id)
     # 1️⃣ Carica PDF
         loader = PyPDFLoader(file_path) 
         docs = loader.load() # docs = raccolta in formato Document di tutte la pagine del pdf
@@ -146,10 +146,12 @@ def ingest_pdf(file_path: str, user_id: str):
                 Document(
                     page_content=para,
                     metadata={
+                    #    "source": filename, # Da inserire
                        "page": page_idx,
                        "page_start": page_idx,
                        "page_end": page_idx,
-                       "paragraph_index": i
+                       "paragraph_index": i,
+                       "chunk_id": f"{page_idx}_{i}" # Da inserire
                 }
                )
                for i, para in enumerate(paragraphs)
@@ -158,10 +160,9 @@ def ingest_pdf(file_path: str, user_id: str):
             # 3️⃣ merge cross-page chunks (il primo doc split. Una specie di semi semantico split, che
             # poi verra ulteriormente 'chunked' con overlap)
             paragraph_docs = merge_broken_sentences(paragraph_docs) # Guarda se l’ULTIMO CHUNK 
-            # finisce con punteggiatura forte e se il next inizia con una maiuscola. In tal caso unisce questi chunk. Se non
-            # MAX_MERGE_LEN questo chunk puo' diventare davvero grande. (Non importa se è fine pagina 
-            # o è metà pagina). questa pratica aumenta logica semantica tra i chunks e  unisce 2 chunks 
-            # per un massimo di 900 chars
+            # finisce con punteggiatura forte e se il next inizia con una maiuscola. Se non lo fanno,
+            # questa function unisce questi chunk se non 'sfora' il MAX_MERGE_LEN chars. questa pratica
+            # Aumenta logica semantica tra i chunks e crea unisce 2 chunks per un massimo di 900 chars
 
             # 4️⃣ split in small chunks con overlap e append diretto in clean_paragraph_docs
             for para_doc in paragraph_docs:
@@ -191,27 +192,27 @@ def ingest_pdf(file_path: str, user_id: str):
         # print('clean_paragraph_docs =',clean_paragraph_docs) # 83 chunks totali
 
         CROSS_PAGE_OVERLAP = 50
-        # print(len('len here:',clean_paragraph_docs))
-        # extra page_overlap for cross_page only
-        for i in range(1, len(clean_paragraph_docs)):
-            current_doc = clean_paragraph_docs[i] # il next chunk rispetto a prev_doc chunk
-            prev_doc = clean_paragraph_docs[i - 1] # il chunk prima di current_doc
-            # print('current page start =', current_doc.metadata.get("page_start"))
-            # print('current_doc.metadata.get("page_end"):   =', current_doc.metadata.get("page_start"))
-            #  Caso cross-page. Se per esempio page_start = 1 e page_end = 2
-            if prev_doc.metadata.get("page_start") != current_doc.metadata.get("page_end"):
+        
+        for i in range(1, len(clean_paragraph_docs)): 
+            current_doc = clean_paragraph_docs[i] 
+            prev_doc = clean_paragraph_docs[i - 1]
+            
+            if prev_doc.metadata.get("page_end") != current_doc.metadata.get("page_start"):
                
                # Prendiamo gli ultimi 50 chars del precedente
                prefix = prev_doc.page_content[-CROSS_PAGE_OVERLAP:]
             
-               # Evitiamo doppie duplicazioni
+               # Evitiamo doppie duplicazioni (se la pagina ha gia overlap, ma questo non avviene mai dato
+            #    il chunk page by page di default)
                if not current_doc.page_content.startswith(prefix):
                 
                    current_doc.page_content = prefix + " " + current_doc.page_content
+                   current_doc.metadata["page_start"] = prev_doc.metadata["page_start"]
+                #    current_doc.metadata["page_end"] = current_doc.metadata["page_end"]
                
 
           
-        # print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
+        print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
         
     #    # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
     #    # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
@@ -262,27 +263,27 @@ def ingest_pdf(file_path: str, user_id: str):
                  all_chunks.extend(para_chunks)
                 
 
-    #     # #     #   debugg
-        # for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
-        #      print(f"CHUNK #{i}")
-        #      print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
-        #      print("PARAGRAPH:", c.metadata.get("paragraph_index"))
-        #      print("CHUNK LEN:", len(c.page_content))
-        #      print("TEXT:", c.page_content)
-        #      print("-" * 50)
-        #      if len(c.page_content) < 200:
-        #          print("⚠️ SMALL CHUNK DETECTED")
-    #     #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
+        # #     #   debugg
+        for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
+             print(f"CHUNK #{i}")
+             print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
+             print("PARAGRAPH:", c.metadata.get("paragraph_index"))
+             print("CHUNK LEN:", len(c.page_content))
+             print("TEXT:", c.page_content)
+             print("-" * 50)
+             if len(c.page_content) < 200:
+                 print("⚠️ SMALL CHUNK DETECTED")
+        #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
      
        # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
-        vectorstore = PineconeVectorStore( 
-           index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
-           embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
-           namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
-         ) 
+    #     vectorstore = PineconeVectorStore( 
+    #        index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
+    #        embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
+    #        namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
+    #      ) 
 
-       # 4️⃣ Inserisci chunks
-        vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
+    #    # 4️⃣ Inserisci chunks
+    #     vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
 
         return {"message": f"{len(all_chunks)} chunks ingested for user {user_id}"}
     
