@@ -205,6 +205,8 @@ def ingest_pdf(file_path: str, user_id: str):
                if not current_doc.page_content.startswith(prefix):
                 
                    current_doc.page_content = prefix + " " + current_doc.page_content
+                   current_doc.metadata["page_start"] = prev_doc.metadata["page_start"] #('cross page update')
+                #    current_doc.metadata["page_end"] = current_doc.metadata["page_end"]
                
 
           
