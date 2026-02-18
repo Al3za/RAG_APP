@@ -1,0 +1,19 @@
+domande e risposte al RAG:
+
+
+domanda livello 1) :
+"question": "In che anno Fermi scrisse “Problemi attuali della fisica”?"
+"answer": "Fermi scrisse “Problemi attuali della fisica” nel 1928."
+
+
+domanda livello 2):
+"question": "Cosa succede alla frequenza dei raggi X nel processo dell’effetto Compton?"
+"answer": "Nel processo dell'effetto Compton, la frequenza dei raggi X diminuisce. Questo avviene perché, durante la diffusione di un quanto di luce (raggio X) che collide con un elettrone, l'energia del quanto di luce diminuisce, e poiché la frequenza di un quanto è proporzionale alla sua energia, la frequenza dei raggi diffusi risulta quindi un po' minore rispetto a quella dei raggi incidenti. L'esperienza conferma questa diminuzione di frequenza, che corrisponde bene ai calcoli teorici."
+
+domanda livello 3):
+"question": Qual è il legame tra la riforma Gentile e l’importanza dell’articolo di Fermi?
+"answer": "La riforma Gentile, attuata in Italia nel 1923, ha dato priorità alle materie umanistiche, ponendo la filosofia al centro dell'istruzione scolastica. Questo ha portato a una penalizzazione della cultura scientifica in un periodo in cui la scienza e la tecnologia erano fondamentali per l'economia e la milizia, specialmente dopo la guerra. L'articolo di Fermi è significativo in questo contesto perché rappresenta un tentativo di stimolare l'interesse per la fisica e la teoria quantistica in un sistema educativo che trascurava le discipline scientifiche. Fermi, consapevole della situazione, ha scritto per aumentare il livello dell'insegnamento della fisica nelle scuole, cercando di rendere accessibili concetti complessi e di risvegliare l'interesse per la scienza tra gli insegnanti e gli studenti."
+
+domanda livello 4):
+"question": "Viene citato esplicitamente Niels Bohr?"
+ "answer": "Non so."

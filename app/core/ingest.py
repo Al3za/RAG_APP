@@ -1,5 +1,6 @@
 import os
 import re
+import unicodedata
 from dotenv import load_dotenv 
 
 from langchain_core.documents import Document
@@ -42,11 +43,13 @@ def ingest_pdf(file_path: str, user_id: str):
            chunk_overlap=50 
          )
         #   /-------------/
+           
         
-      #   Questa unisce solo quando la prima parte finisce con una lettera spezzata:
         def clean_pdf_text(text: str) -> str: # clean each pdf page
 
          # unisce parole spezzate da hyphen + newline
+            text = unicodedata.normalize("NFC", text)
+
             text = re.sub(r"-\s*\n\s*", "", text)
 
             # parola spezzata da newline senza hyphen
@@ -57,7 +60,33 @@ def ingest_pdf(file_path: str, user_id: str):
             )
 
             return text
+
+       
+
+
+        def fix_pdf_characters(text: str) -> str: # correggere gli errori tipo pi u, cos ı`
+            # sostituisci backtick usati come apostrofi
+            text = text.replace("`", "'")
+            text = text.replace("´", "'")
+            text = text.replace("’", "'")  # normalizza apostrofi curvi
+            # sostituisci caratteri strani ricorrenti (tipo ı → i)
+
+            # casi tipo: pi' u  → più
+            text = re.sub(r"'\s+u\b", "ù", text)
+            text = re.sub(r"'\s+a\b", "à", text)
+            text = re.sub(r"'\s+e\b", "è", text)
+            text = re.sub(r"'\s+i\b", "ì", text)
+            text = re.sub(r"'\s+o\b", "ò", text)
         
+            # casi tipo: propriet' a → proprietà
+            text = re.sub(r"'\s+a\b", "à", text)
+        
+         
+            text = text.replace("ı", "i")
+            text = text.replace("ˆ", "")  # rimuove circonflessi sparsi
+            # puoi aggiungere altri pattern specifici
+            return text
+
          
         # splittiamo solo se:
         # punto + newline + Maiuscola
@@ -109,6 +138,7 @@ def ingest_pdf(file_path: str, user_id: str):
 
         for page_idx, doc in enumerate(docs): 
             cleaned_pdf_text = clean_pdf_text(doc.page_content)
+            cleaned_pdf_text = fix_pdf_characters(cleaned_pdf_text)
             paragraphs = split_into_paragraphs(cleaned_pdf_text) # non sempre riconosce i paragrafi se 
             
             paragraph_docs = [ # i documenti dei paragrafi (o blocco pagina intero se paragrafi non esistono), per ogni pagina del pdf
@@ -229,7 +259,7 @@ def ingest_pdf(file_path: str, user_id: str):
                  all_chunks.extend(para_chunks)
                 
 
-    #     # #     #   debugg
+        # #     #   debugg
         # for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
         #      print(f"CHUNK #{i}")
         #      print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py

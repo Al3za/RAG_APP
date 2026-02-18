@@ -6,7 +6,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
 
-from dotenv import load_dotenv 
+from dotenv import load_dotenv
+
+from app.core.cosine_similarity_fun import cosine_similarity 
 
 load_dotenv()
 
@@ -73,12 +75,18 @@ Context:
 
 Question:
 {question}
-""")
+""") 
+# OpenAIEmbeddings(model="text-embedding-3-small") e model="gpt-4o-mini" distingue bene anche se il pdf e' in linguaggio
+# misto
 
-# prompt molto buono se' la risposta ad una query e' distribuita in piu' pagine di pdf:
-# Usa tutte le informazioni fornite nel contesto, anche se provengono
-# da parti o pagine diverse del documento. Se la risposta richiede
-# più sezioni, sintetizzale in un’unica spiegazione coerente.
+
+# Sintesi
+
+# Non è strano che una domanda semplice dia punteggi ~0.7: il modello embedding piccolo + MMR + caratteri PDF “sporchi” abbassa la similarità.
+
+# Con soglia 0.75 → “I don’t know”
+
+# Soluzione pratica: abbassare soglia a 0.65–0.70, pulire meglio i chunk, eventualmente usare embedding più grande.
 
 
 def ask_question(user_id: str, question: str):
@@ -90,28 +98,47 @@ def ask_question(user_id: str, question: str):
         text_key="text"
     )
     
-    # print(' =', user_id)
-
-
+    # Recupera chunk con MMR:
     retriever = vectorstore.as_retriever(
         search_type="mmr", 
         search_kwargs={ 
-            "k": 5, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.)
+            "k": 9, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.)
             # "filter": {"user_id": user_id}, 
             "fetch_k": 15, 
-            "lambda_mult":0.7 # (0.5 per iniziare). 0.7 porta più peso alla similarità, 
+            "lambda_mult":0.8 # (0.5 per iniziare). 0.7 porta più peso alla similarità, 
             # meno alla diversità e spesso migliora precisione.
         }
     ) 
+    question_docs = retriever.invoke(question) # qui ci ssono i top 5 semantic_chunks pdf correlati alla query
+   
+    # Calcola embedding della query
+    query_embedding = embeddings_model.embed_query(question)
+
+    # Calcola score manualmente
+    filtered_docs = []
+
+    for doc in question_docs: # usiamo la funzione cosine_similarity per filtrare i chunks della query
+        # in modo da avere solo quelli > 0.75
+        chunk_embedding = embeddings_model.embed_query(doc.page_content) # il content di ognuno dei top 5 chunk
+        score = cosine_similarity(query_embedding, chunk_embedding) # misuriamo la similarita semantica
+
+        print("Score:", score)
+
+        if score >= 0.55: # 0.75 è un buon punto iniziale. 0.78–0.80 è più conservativo
+            filtered_docs.append(doc) # solo i chunk importanti. Ora invece di 5 chunk, avremo magari
+            # solo 3, ma saranno molto rilevanti rispetto alla query
+
+    if not filtered_docs: # se nemmeno 1 chunk e > 0.75 (quindi nemmeno 1 chunk abbastanza rilevante alla query)
+       return {"answer": "I don't know based on the provided context."}
     
     # docs_debugg = retriever.invoke(question)
 
-    # print("\n--- CHUNKS RECUPERATI ---\n")
-    # for i, d in enumerate(docs_debugg):
-    #     print(f"\nChunk {i+1}")
-    #     print("Page:", d.metadata.get("page"))
-    #     print("Paragraph index:", d.metadata.get("paragraph_index"))
-    #     print(d.page_content[:500])
+    print("\n--- CHUNKS RECUPERATI ---\n")
+    for i, d in enumerate(filtered_docs):
+        print(f"\nChunk {i+1}")
+        print("Page:", d.metadata.get("page"))
+        print("Paragraph index:", d.metadata.get("paragraph_index"))
+        print(d.page_content)
 
 
        # 2️⃣ RAG chain moderna (LCEL)
