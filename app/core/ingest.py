@@ -157,7 +157,8 @@ def ingest_pdf(file_path: str, user_id: str):
                for i, para in enumerate(paragraphs)
             ]
 
-            # 3️⃣ merge cross-page in-line
+            # 3️⃣ merge cross-page chunks (il primo doc split. Una specie di semi semantico split, che
+            # poi verra ulteriormente 'chunked' con overlap)
             paragraph_docs = merge_broken_sentences(paragraph_docs) # Guarda se l’ULTIMO CHUNK 
             # finisce con punteggiatura forte e se il next inizia con una maiuscola. Se non lo fanno,
             # questa function unisce questi chunk se non 'sfora' il MAX_MERGE_LEN chars. questa pratica

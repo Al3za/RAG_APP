@@ -17,7 +17,9 @@ index = pc.Index(index_name)
 print('index_name = ', index_name)
 
 # model 3-small uguale al dimension definito nell' "index_name" che crea stessi embeddings dei chunks dei pdf
-embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small") 
+embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small") # Crea gia' ottimi embeddings, va bene per questo progetto personale
+# embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large") # Crea embeddings piu' precisi, anche su chunks piu' piccoli/grandi
+
 
 # chat ci aiuta a formulare una risposta sensata in base ai 4 pdf chunks che piu' si assomigliano semanticamente all query(la domanda a chat) che lo user fa'
 llm = ChatOpenAI( 
@@ -92,9 +94,9 @@ def ask_question(user_id: str, question: str):
     
     # print(' =', user_id)
 
-
+    # Qui facciamo solo reranking, che e' una tecnica potente molto usata in produzione. Al momento
     retriever = vectorstore.as_retriever(
-        search_type="mmr", 
+        search_type="mmr", # MMR = Reranking
         search_kwargs={ 
             "k": 8, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.) ps. Gli LLM di default sono bravissimi ad ignorare chunks irrilevanti
             # e ad attingere dalle info di soli 3 di questi, invece che da tutti e 8
