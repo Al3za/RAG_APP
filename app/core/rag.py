@@ -96,7 +96,8 @@ def ask_question(user_id: str, question: str):
     retriever = vectorstore.as_retriever(
         search_type="mmr", 
         search_kwargs={ 
-            "k": 5, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.)
+            "k": 8, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.) ps. Gli LLM di default sono bravissimi ad ignorare chunks irrilevanti
+            # e ad attingere dalle info di soli 3 di questi, invece che da tutti e 8
             # "filter": {"user_id": user_id}, 
             "fetch_k": 15, 
             "lambda_mult":0.7 # (0.5 per iniziare). 0.7 porta più peso alla similarità, 
