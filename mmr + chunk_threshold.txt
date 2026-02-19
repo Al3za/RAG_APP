@@ -1,4 +1,4 @@
-mmr + chunk_threshold:
+Benissimo, ho fatto dei test ma ancora mmr + chunk_threshold non da' abbastanza similarita' semantica ad alchune domande:
 
 domanda livello 2):
 "question": "Cosa succede alla frequenza dei raggi X nel processo dell’effetto Compton?"
@@ -34,3 +34,22 @@ Score: 0.5752719129437082
 Score: 0.5754862593186854
 Score: 0.5761724525613449
 Score: 0.5443874119217527
+
+
+
+
+
+---------
+
+domanda livello 3):
+"question": "Qual è il legame tra la riforma Gentile e l’importanza dell’articolo di Fermi?"
+"answer": "I don't know based on the provided context.
+
+"Il legame tra la riforma Gentile e l'importanza dell'articolo di Fermi risiede nel contesto storico dell'istruzione in Italia. La riforma Gentile, attuata nel 1923, privilegiava le materie umanistiche, ponendo la filosofia al centro dell'educazione scolastica. Di conseguenza, il liceo classico (“Ginnasio”) era considerato l'unico istituto in grado di garantire una preparazione adeguata per le classi medie e dirigenti. In questo scenario, la cultura scientifica veniva penalizzata, nonostante la scienza e la tecnologia avessero un ruolo cruciale nell'economia e nella militanza del paese, specialmente dopo la guerra. L'articolo di Fermi, pubblicato in un giornale per insegnanti e dirigenti scolastici, diventa quindi significativo poiché rappresenta un tentativo di promuovere la cultura scientifica in un periodo in cui essa era trascurata, evidenziando l'importanza della scienza nell'educazione e nella società."
+
+
+
+
+much more still be expected
+
+nella nuova meccanica quantistica

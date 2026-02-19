@@ -5,6 +5,16 @@ from app.api.chat import router as chat_router # dove facciamo le domande a chat
 from app.core.config import settings
 
 app = FastAPI(title=settings.APP_NAME) # "RAG PDF API"
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware( # add_middleware(default)
+    CORSMiddleware,
+    allow_origins=["*"],  # per ora dev (in prod definiamo solo i corretti domains)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+) # per non bloccare la comunicazione dal render frontend (in dev)
+
 
 app.include_router(health_router) 
 app.include_router(upload_router)

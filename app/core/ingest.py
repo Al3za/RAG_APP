@@ -210,7 +210,7 @@ def ingest_pdf(file_path: str, user_id: str):
                
 
           
-        # print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
+        print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
         
     #    # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
     #    # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
