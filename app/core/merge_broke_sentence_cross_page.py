@@ -33,15 +33,15 @@ def merge_broken_sentences(chunks):
         ):
             merged[-1].page_content += " " + current.page_content
 
-            merged[-1].metadata["page_start"] = min(
-              merged[-1].metadata.get("page_start", current.metadata["page_start"]),
-              current.metadata.get("page_start")
-            )
+            # merged[-1].metadata["page_start"] = min(
+            #   merged[-1].metadata.get("page_start", current.metadata["page_start"]),
+            #   current.metadata.get("page_start")
+            # )
 
-            merged[-1].metadata["page_end"] = max(
-              merged[-1].metadata.get("page_end", current.metadata["page_end"]),
-              current.metadata.get("page_end")
-            )
+            # merged[-1].metadata["page_end"] = max(
+            #   merged[-1].metadata.get("page_end", current.metadata["page_end"]),
+            #   current.metadata.get("page_end")
+            # )
 
             # merged[-1].metadata["page_start"] = current.metadata.get("page_start")
             # merged[-1].metadata["page_end"] = current.metadata.get("page_end")

@@ -47,9 +47,10 @@ def ingest_pdf(file_path: str, user_id: str):
         
         def clean_pdf_text(text: str) -> str: # clean each pdf page
 
-         # unisce parole spezzate da hyphen + newline
+            # Mette gli accenti e apostrofi al posto giusto
             text = unicodedata.normalize("NFC", text)
 
+            # unisce parole spezzate da hyphen + newline
             text = re.sub(r"-\s*\n\s*", "", text)
 
             # parola spezzata da newline senza hyphen
@@ -196,7 +197,7 @@ def ingest_pdf(file_path: str, user_id: str):
             # print('current page start =', current_doc.metadata.get("page_start"))
             # print('current_doc.metadata.get("page_end"):   =', current_doc.metadata.get("page_start"))
             #  Caso cross-page. Se per esempio page_start = 1 e page_end = 2
-            if prev_doc.metadata.get("page_start") != current_doc.metadata.get("page_end"):
+            if prev_doc.metadata.get("page_end") != current_doc.metadata.get("page_start"):
                
                # Prendiamo gli ultimi 50 chars del precedente
                prefix = prev_doc.page_content[-CROSS_PAGE_OVERLAP:]
