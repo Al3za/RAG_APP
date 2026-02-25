@@ -83,13 +83,13 @@ Question:
 # più sezioni, sintetizzale in un’unica spiegazione coerente.
 
 
-def ask_question(user_id: str, question: str):
+def ask_question(hashed_email: str, question: str):
 
     vectorstore = PineconeVectorStore(
         index=index,
         embedding=embeddings_model, 
-        namespace=user_id,
-        text_key="text"
+        namespace=hashed_email,
+        text_key="text" # text e' dove e salvato i text chunks lato Pinecone
     )
     
     # print(' =', user_id)
