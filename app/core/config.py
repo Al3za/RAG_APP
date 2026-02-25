@@ -1,4 +1,5 @@
-from dotenv import load_dotenv # terminal: Get-Command python. output venv\Scripts\python.exe. cosi vscode e' in sink con il terminal dove hai aperto il venv, e trova i packetti installati
+from dotenv import load_dotenv # terminal: Get-Command python. 
+# output venv\Scripts\python.exe. cosi vscode e' in sink con il terminal dove hai aperto il venv, e trova i packetti installati
 import os
 
 load_dotenv()
