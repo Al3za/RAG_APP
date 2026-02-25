@@ -14,7 +14,7 @@ pc = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
 
 index_name = os.getenv("PINECONE_INDEX_NAME") # index per fare gli embeddings delle query (1536)
 index = pc.Index(index_name)
-print('index_name = ', index_name)
+# print('index_name = ', index_name)
 
 # model 3-small uguale al dimension definito nell' "index_name" che crea stessi embeddings dei chunks dei pdf
 embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small") # Crea gia' ottimi embeddings, va bene per questo progetto personale
