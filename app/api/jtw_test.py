@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from app.api.verify_nextauth_jwt import get_current_user
+from app.utils.verify_nextauth_jwt import get_current_user
 
 router = APIRouter()
 

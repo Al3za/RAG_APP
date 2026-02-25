@@ -29,8 +29,8 @@ index_name = os.getenv("PINECONE_INDEX_NAME") # gia creato sotto, basta crearlo 
 
 embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
-def ingest_pdf(file_path: str, user_id: str):
-    
+def ingest_pdf(file_path: str, hashed_email: str):
+
     try:
         # print('user_id = ', user_id)
     # 1️⃣ Carica PDF
@@ -212,7 +212,7 @@ def ingest_pdf(file_path: str, user_id: str):
                
 
           
-        print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
+        # print('pre_clean_paragraph_docs_overflow =',clean_paragraph_docs) # 83 chunks totali
         
     #    # NON AVREMO BISOGNO SI PAGE_WINDOW OVERLAP, PERCHE' qui andiamo ad unire i chunks semanticamente
     #    # simili anche se si trovano in pagine differenti. Dopodiche' raccogliamo i top 5 chunks 
@@ -264,28 +264,27 @@ def ingest_pdf(file_path: str, user_id: str):
                 
 
         # #     #   debugg
-        for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
-             print(f"CHUNK #{i}")
-             print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
-             print("PARAGRAPH:", c.metadata.get("paragraph_index"))
-             print("CHUNK LEN:", len(c.page_content))
-             print("TEXT:", c.page_content)
-             print("-" * 50)
-             if len(c.page_content) < 200:
-                 print("⚠️ SMALL CHUNK DETECTED")
-        #  🧼 CLEANUP: unione chunk piccoli (non piu' necessaria)
+        # for i, c in enumerate(all_chunks[:40]): # prendi 5 chunks
+        #      print(f"CHUNK #{i}")
+        #      print("PAGES:", c.metadata.get("page_start"), "→", c.metadata.get("page_end")) # i metadati definiti da noi in page?overlap.py
+        #      print("PARAGRAPH:", c.metadata.get("paragraph_index"))
+        #      print("CHUNK LEN:", len(c.page_content))
+        #      print("TEXT:", c.page_content)
+        #      print("-" * 50)
+        #      if len(c.page_content) < 200:
+        #          print("⚠️ SMALL CHUNK DETECTED")
      
-       # 3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
-    #     vectorstore = PineconeVectorStore( 
-    #        index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
-    #        embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
-    #        namespace=user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
-    #      ) 
+    #    3️⃣ Connetti Pinecone con namespace = user_id (storage dei pdf di ogni diverso user)
+        vectorstore = PineconeVectorStore( 
+           index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
+           embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
+           namespace= hashed_email #user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
+         ) 
 
     #    # 4️⃣ Inserisci chunks
-    #     vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
+        vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
 
-        return {"message": f"{len(all_chunks)} chunks ingested for user {user_id}"}
+        return {"message": f"{len(all_chunks)} chunks ingested for user {hashed_email}"}
     
     
    # 🧹 Pulizia file temporanei (best practice). rimuoviamo i file gia caricati in locale(C:\Users\ale\AppData\Local\Temp\tmpxxxx.pdf) in ingest.py
