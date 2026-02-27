@@ -12,6 +12,7 @@ from pinecone import Pinecone, ServerlessSpec # SDK Pinecone
 from app.core.cosine_similarity_fun import semantic_chunk_paragraphs
 from app.core.merge_broke_sentence_cross_page import merge_broken_sentences
 from app.core.pre_post_merge_small_parag import post_merge_semantic_small_chunks, pre_merge_small_paragraphs
+from app.utils.rate_limiter import ingest_status
 # from app.core.page_overlap  import build_page_windows
 
 # NEL FILE ingest_desc.py VIENE SPIEGATO DETTAGLIATAMENTE COSA AVVIENE IN QUESTO FILE RIGA PER RIGA
@@ -29,7 +30,7 @@ index_name = os.getenv("PINECONE_INDEX_NAME") # gia creato sotto, basta crearlo 
 
 embeddings_model = OpenAIEmbeddings(model="text-embedding-3-small")
 
-def ingest_pdf(file_path: str, hashed_email: str):
+def ingest_pdf(file_path: str, namespace: str):
 
     try:
         # print('user_id = ', user_id)
@@ -278,18 +279,21 @@ def ingest_pdf(file_path: str, hashed_email: str):
         vectorstore = PineconeVectorStore( 
            index_name=index_name, # deve eseistere. (usa index_name_large se vuoi usare il modello emb large)
            embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
-           namespace= hashed_email #user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
+           namespace= namespace #user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
          ) 
 
     #    # 4️⃣ Inserisci chunks
         vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)
+        ingest_status(namespace,'ready') # gli argomenti da passare a redis per il frontend
 
-        return {"message": f"{len(all_chunks)} chunks ingested for user {hashed_email}"}
+        # return {"message": f"{len(all_chunks)} chunks ingested for user {namespace}"} # return noo needed
     
+    except Exception as e:
+        ingest_status(namespace,'error')
+        print("Ingest error:", e)
     
    # 🧹 Pulizia file temporanei (best practice). rimuoviamo i file gia caricati in locale(C:\Users\ale\AppData\Local\Temp\tmpxxxx.pdf) in ingest.py
    #  per non incappare in errori. 
-
     finally:
         if os.path.exists(file_path):
             os.remove(file_path)

@@ -1,12 +1,14 @@
-from fastapi import  APIRouter, UploadFile, File, Form, BackgroundTasks, Depends
-from app.utils.jwt_email import email_to_namespace
-from app.utils.verify_nextauth_jwt import get_current_user
+from fastapi import  APIRouter, UploadFile, File, BackgroundTasks, Depends
+from app.utils.check_pdf_pages import check_pdf_pages
+from app.utils.auth import get_user_namespace
 from app.core.ingest import ingest_pdf
+from app.utils.rate_limiter import rate_limit
 import tempfile
 import boto3
 import os
 from uuid import uuid4
 from dotenv import load_dotenv
+from app.utils.rate_limiter import ingest_status
 
 load_dotenv()
 
@@ -22,26 +24,34 @@ s3 = boto3.client(
 BUCKET_NAME = os.getenv("S3_BUCKET_NAME")
 # print('BUCKET_NAME checkd', BUCKET_NAME)
 
+
 @router.post("/upload_pdf")
-async def upload_pdf(user_email: dict = Depends(get_current_user), # otteniamo l'email dal token inviato dal frontend. Non inviamo l'email direttamente in plain text
+async def upload_pdf(namespace: str = Depends(get_user_namespace), # otteniamo l'email dal token inviato dal frontend. Non inviamo l'email direttamente in plain text
                      file: UploadFile = File(...), 
-                     background_tasks: BackgroundTasks=None): # Dopo l’upload del pdf in s3, avvii l’ingest dei chunks embeddings in background, Scarichando il PDF da S3 (temporaneo) e passandolo alla funzione ingest_pdf(file_path, user_id) 
+                     background_tasks: BackgroundTasks=None): # Dopo l’upload del pdf in s3, 
+                    #  avvii l’ingest dei chunks embeddings in background, Scarichando il PDF da S3 
+                    # (temporaneo) e passandolo alla funzione ingest_pdf(file_path, user_id) 
     
     if not file.filename.endswith(".pdf"):
         return {"error": "Only PDF files are allowed for this demo"}
-    
-    # hash the jwt user email before storing it in s3 and pinecone namespaces 
-    email = user_email['email']
-    hashed_user_email = email_to_namespace(email) # working
-    print('email and hased email =', email, hashed_user_email )
-    # akecakabro@gmail.com and 7ac49cad74737bbd98ca7d3d74a45b7b8f852a91d9022a21221ee14a8cd27712
 
-    file_key = f"{hashed_user_email}/{uuid4()}_{file.filename}"
+    # RATE LIMIT HERE
+    rate_limit(namespace) # docker start my-redis in local 
+
+    print('rate limit')
+    ## CHECK TOTAL PDF PAGE (NOT BIGGER THAT 50 PAGES ALLOWED). Se non > 50, salva su s3, 
+    # e procedi con ingest
+    await check_pdf_pages(file) # ritorna error(si blocca qui) o tatal page(continua con ingest)
+    
+    print('check_pdf_pages')
+    ## namespace is the jwt token user_email already verified and hashed, ready to saved in s3 and pinecone
+    ## for multitenant rag app
+    # print(' hased email namespace =', namespace)
+    file_key = f"{namespace}/{uuid4()}_{file.filename}"
     
     # 1️⃣ Upload pdf su S3
     s3.upload_fileobj(file.file, BUCKET_NAME, file_key)
 
-  
     # questo blocco codice serve a:
     # salvare il pdf che abbiamo scaricato da s3 in locale (es: C:\Users\ale\AppData\Local\Temp\tmpx8f3s9.pdf) fino a quando facciamo 
     # chunk,emb, e pinecone storage, e poi chiudiamo il service e ripuliamo il file locale(questo in ingest.py file in "finally") 
@@ -51,15 +61,17 @@ async def upload_pdf(user_email: dict = Depends(get_current_user), # otteniamo l
     tmp = tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) # TEMP (persistente). NamedTemporaryFile crea un file fisico sul disco, es: C:\Users\ale\AppData\Local\Temp\tmpx8f3s9.pdf
     s3.download_fileobj(BUCKET_NAME, file_key, tmp) # download il file appena caricato su s3
     tmp.close()  # IMPORTANTISSIMO. Flush dei buffer del serviziod download del file. PyPDFLoader fallirebbe se il file restasse aperto
-
+    
+    print('ingest_status')
+    ingest_status(namespace,'processing') # gli argomenti da passare a redis
+    print('ingest_status upload', )
+    # redis_client.set(f"doc_status:{namespace}", "processing")
     # 3️⃣ Ingest in background il pdf file appena downloaded da s3
-    background_tasks.add_task(ingest_pdf, tmp.name, hashed_user_email) # avvia ingest operation in background sul file pdf che e' stato appena caricato su s3.
+    background_tasks.add_task(ingest_pdf, tmp.name, namespace) # avvia ingest operation in background sul file pdf che e' stato appena caricato su s3.
     # (funzione asyncrona, riceviamo subito il return, ma il file viene processato in background)
 
     return {"message": "PDF uploaded successfully and ingestion started in background", 
             "file_key": file_key}
-
-
 
 # # # 🔹 descrizione di cosa avviene in questo file quando uno user posta il pdf che vuole caricare:
 
