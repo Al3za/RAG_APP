@@ -83,17 +83,15 @@ Question:
 # più sezioni, sintetizzale in un’unica spiegazione coerente.
 
 
-def ask_question(hashed_email: str, question: str):
-
+def ask_question(user_namespace: str, question: str):
+    # print('user_namespace ask_question here =', user_namespace)
     vectorstore = PineconeVectorStore(
         index=index,
         embedding=embeddings_model, 
-        namespace=hashed_email,
+        namespace=user_namespace, # the chunks related to each user (multitanent)
         text_key="text" # text e' dove e salvato i text chunks lato Pinecone
     )
     
-    # print(' =', user_id)
-
     # Qui facciamo solo reranking, che e' una tecnica potente molto usata in produzione. Al momento
     retriever = vectorstore.as_retriever(
         search_type="mmr", # MMR = Reranking

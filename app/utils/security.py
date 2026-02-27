@@ -1,3 +1,5 @@
+# (verifica JWT)
+
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import jwt, JWTError
@@ -15,12 +17,9 @@ security = HTTPBearer()  # legge Authorization: Bearer <token>
 
 
 # message: 401 Unauthorized se non passiamo nessun token dal frontend
-def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security)
-) -> Dict:
-    token = credentials.credentials # il custom token generato nel frontend 
-    # header = jwt.get_unverified_header(token)
-    # print(header)
+def verify_jwt_token(token: str) -> dict: # Jwt token verify
+    
+    # print('token here 1', token)
     try:
         payload = jwt.decode( # check if jwt token is correct, else throws 401 error
             token,
@@ -29,7 +28,8 @@ def get_current_user(
         )
         
         # payload contiene: email, name, picture, sub, iat, exp
-        print('middleware token payload verify =', payload)
+        # print('middleware token payload verify =', payload)
         return payload
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token") # se passiamo token invalido o expired 
+        raise HTTPException(status_code=401, 
+                            detail="Invalid or expired token") # se passiamo token invalido o expired 
