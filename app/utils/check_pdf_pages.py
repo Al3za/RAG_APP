@@ -11,7 +11,7 @@ async def check_pdf_pages(file: UploadFile):
     if total_pages > MAX_PAGES:
         raise HTTPException(
             status_code=400,
-            detail=f"PDF exceeds {MAX_PAGES} pages limit." # l'error che finisce nel frontend
+            detail=f"PDF exceeds {MAX_PAGES} pages limit. Please upload a smaller pdf" # l'error che finisce nel frontend
         )
 
     # IMPORTANTISSIMO, PdfReader consuma lo stream, Se non lo resetti, 
