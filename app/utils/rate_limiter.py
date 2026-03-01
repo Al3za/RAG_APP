@@ -41,9 +41,16 @@ def rate_limit(namespace: str):
 
 def ingest_status(namespace: str, status:str): # SET status to let the client know when the pdf is 
     # ingested and inserted on s3 and pinecone
+    if status == "ready": # persistente solo se lo user ha gia uploadato con successo il pdf su pinecone
+        # print("status == ready") # print("status == ready")
+        redis_client.set(f"doc_status:{namespace}", status) # no return needed here   
+    else:
+        # print("status == not ready")
         redis_client.set(f"doc_status:{namespace}", # no return needed here
                          status,
-                         ex=600) # 10 min, Così non rimane sporco per sempre.
+                         ex=600) # 10 min, dopodiche si cancellano le chiavi(Così non spreca spazio inutile.)
+        
+         
 
 def get_ingest_status(namespace: str): # GET status to let the client know when the pdf is 
     # ingested and inserted on s3 and pinecone

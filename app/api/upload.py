@@ -47,6 +47,9 @@ async def upload_pdf(namespace: str = Depends(get_user_namespace), # otteniamo l
     ## namespace is the jwt token user_email already verified and hashed, ready to saved in s3 and pinecone
     ## for multitenant rag app
     # print(' hased email namespace =', namespace)
+
+    # inizia un try catch qui per avere un mess in caso lo storage di s3 andasse male
+
     file_key = f"{namespace}/{uuid4()}_{file.filename}"
     
     # 1️⃣ Upload pdf su S3
