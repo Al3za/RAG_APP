@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 # from app.utils.hashed_email import email_to_namespace
 from app.utils.auth import get_user_namespace
-from app.utils.rate_limiter import get_ingest_status, rate_limit
+from app.utils.rate_limiter import get_ingest_status
 
 router = APIRouter()
 

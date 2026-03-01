@@ -94,7 +94,7 @@ def ask_question(user_namespace: str, question: str):
     
     # Qui facciamo solo reranking, che e' una tecnica potente molto usata in produzione. Al momento
     retriever = vectorstore.as_retriever(
-        search_type="mmr", # MMR = Reranking
+        search_type="mmr", # MMR = partial Reranking
         search_kwargs={ 
             "k": 8, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.) ps. Gli LLM di default sono bravissimi ad ignorare chunks irrilevanti
             # e ad attingere dalle info di soli 3 di questi, invece che da tutti e 8

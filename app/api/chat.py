@@ -14,9 +14,6 @@ class ChatRequest(BaseModel): # si aspetta json format, quindi da postman fai il
 @router.post('/chat')
 def chat_endpoint(payload: ChatRequest,
                   namespace: str = Depends(get_user_namespace)):  # payload:ChatRequest
-   
-    # print('namespace chat here =', namespace)
-    # print('payload.question =', payload.question)
     rate_limit(namespace) # docker start my-redis
     response = ask_question( # la function in rag.py che ci connette con pinecone e fa' il retriver
         user_namespace= namespace, #payload.hashed_user_mail, 

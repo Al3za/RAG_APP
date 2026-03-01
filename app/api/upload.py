@@ -41,12 +41,15 @@ async def upload_pdf(namespace: str = Depends(get_user_namespace), # otteniamo l
     print('rate limit')
     ## CHECK TOTAL PDF PAGE (NOT BIGGER THAT 50 PAGES ALLOWED). Se non > 50, salva su s3, 
     # e procedi con ingest
-    await check_pdf_pages(file) # ritorna error(si blocca qui) o tatal page(continua con ingest)
+    await check_pdf_pages(file) # ritorna error(si blocca qui e manda error detail al frontend) o tatal page(continua con ingest)
     
-    print('check_pdf_pages')
+    # print('check_pdf_pages')
     ## namespace is the jwt token user_email already verified and hashed, ready to saved in s3 and pinecone
     ## for multitenant rag app
     # print(' hased email namespace =', namespace)
+
+    # inizia un try catch qui per avere un mess in caso lo storage di s3 andasse male
+
     file_key = f"{namespace}/{uuid4()}_{file.filename}"
     
     # 1️⃣ Upload pdf su S3
