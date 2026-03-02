@@ -3,7 +3,8 @@ import redis
 from dotenv import load_dotenv 
 load_dotenv()
 
-REDIS_URL = os.getenv("REDIS_URL")
+REDIS_URL = os.getenv("REDIS_URL") # questa .env key e' salvata sul render deploy, e serve solo per remder
+## in locale apriamo il container docker con l'imagine di redis per usare questa in dev mode localmente
 
 if REDIS_URL: # funziona quando deploiamo su redis
     redis_client = redis.from_url(REDIS_URL, decode_responses=True)
