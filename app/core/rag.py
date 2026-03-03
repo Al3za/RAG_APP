@@ -5,6 +5,7 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
+from app.utils.extract_page import extract_page_info
 
 from dotenv import load_dotenv 
 
@@ -91,19 +92,74 @@ def ask_question(user_namespace: str, question: str):
         namespace=user_namespace, # the chunks related to each user (multitanent)
         text_key="text" # text e' dove e salvato i text chunks lato Pinecone
     )
+
+    page_info = extract_page_info(question) # Vediamo se la query contiene riferimenti a delle pagine
+    # tipo 'riassumi pagina 5', oppure 'riassumi da pagina 3 a 5'
+
+     # ----------------------------------
+    # CASO 1: Query con pagina specifica
+    # ----------------------------------
     
-    # Qui facciamo solo reranking, che e' una tecnica potente molto usata in produzione. Al momento
-    retriever = vectorstore.as_retriever(
-        search_type="mmr", # MMR = partial Reranking
-        search_kwargs={ 
-            "k": 8, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.) ps. Gli LLM di default sono bravissimi ad ignorare chunks irrilevanti
-            # e ad attingere dalle info di soli 3 di questi, invece che da tutti e 8
-            # "filter": {"user_id": user_id}, 
-            "fetch_k": 15, 
-            "lambda_mult":0.7 # (0.5 per iniziare). 0.7 porta più peso alla similarità, 
-            # meno alla diversità e spesso migliora precisione.
-        }
-    ) 
+    if page_info:
+
+        if page_info[0] == "single":
+            page_number = page_info[1]
+
+            retriever = vectorstore.as_retriever(
+                search_type="mmr",
+                search_kwargs={
+                    "k": 20,   
+                    "fetch_k": 50, 
+                    "lambda_mult": 0.8,
+                    "filter":{
+                         "page_start": {"$lte": page_number},
+                         "page_end": {"$gte": page_number}
+                        }
+                }
+            )
+
+        elif page_info[0] == "range": # se uno user domanda 'riassumi da pagina 2 a 6'
+            start_page = page_info[1]
+            end_page = page_info[2]
+
+            retriever = vectorstore.as_retriever(
+                search_type="mmr",
+                search_kwargs={
+                    "k": 70, 
+                    "fetch_k": 100,
+                    "lambda_mult": 0.8,
+                    "filter":{
+                         "page_start": {"$lte": end_page},
+                         "page_end": {"$gte": start_page}
+                        }
+                }
+            )
+
+    # ----------------------------------
+    # CASO 2: Query semantica normale
+    # ----------------------------------
+    else: # qui si arriva se l'utente non specifica 'page' nella query('riassumi pagina 2'), ma fa' domande
+        # specifiche tipo 'chi era enrico fermi?'
+
+    # Qui facciamo solo 'partial' reranking(mmr), che e' una tecnica potente molto usata in produzione. 
+    # Se avessimo bisogno del vero re-ranking vero, vedi nel branch "similarity-search-rank" come si fa'
+    # ps In molti sistemi RAG moderni Non si usa threshold hard per reranking. Si usa solo top-k e poi si lascia decidere all’LLM
+    # questo perche' Gli LLM sono molto bravi a ignorare chunk irrilevanti.
+    # Quindi questa e' la soluzione piu' semplice e spesso migliore.
+        retriever = vectorstore.as_retriever(
+             search_type="mmr", # MMR = partial Reranking
+             search_kwargs={ 
+                 "k": 8, # 5-7 va bene. (Spesso 5 è più che sufficiente e riduce rumore.) ps. Gli LLM di default sono bravissimi ad ignorare chunks irrilevanti
+                 # e ad attingere dalle info di soli 3 di questi, invece che da tutti e 8
+                 # "filter": {"user_id": user_id}, 
+                 "fetch_k": 15, 
+                 "lambda_mult":0.8 # (0.5 per iniziare). 0.7/0.8 porta più peso alla similarità, 
+                 # meno alla diversità e spesso migliora precisione.
+            }
+        ) 
+
+    # Servirebbe threshold se:
+    # hai migliaia di documenti, dominio misto, rumore elevato, vuoi ridurre token cost
     
     # docs_debugg = retriever.invoke(question)
 
@@ -116,6 +172,7 @@ def ask_question(user_namespace: str, question: str):
 
 
        # 2️⃣ RAG chain moderna (LCEL)
+
     rag_chain = (
         {
             "context": retriever,
