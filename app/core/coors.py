@@ -3,18 +3,23 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import os
+from dotenv import load_dotenv 
 
+load_dotenv()
+
+FRONTEND_URL = os.environ.get("FRONTEND_URL")
 
 def setup_cors(app: FastAPI):
 
-    FRONTEND_URL = os.environ.get(
-        'NEXTAUTH_URL', # url del frontend su render salvata su render backend .env
-        "http://localhost:3000" # fallback per sviluppo
-    )
+    origins = [
+        "http://localhost:3000" # per sviluppo
+    ]
+    if FRONTEND_URL : # FRONTEND_URL e' nel .env di render ed e' usata in prod
+        origins.append(FRONTEND_URL)
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[FRONTEND_URL], 
+        allow_origins=origins, 
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
