@@ -3,7 +3,7 @@ from app.utils.redis_client import redis_client
 
 router = APIRouter()
 
-@router.get("/redis_test")
+@router.get("/redis_test") # redis on render work correctly
 def redis_test():
     redis_client.set("render_test", "connected", ex=60) 
     return  {"value": redis_client.get("render_test")}

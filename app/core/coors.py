@@ -8,9 +8,8 @@ import os
 def setup_cors(app: FastAPI):
 
     FRONTEND_URL = os.environ.get(
-        "https://rag-app-frontend-46fd.onrender.com",
+        'NEXTAUTH_URL', # url del frontend su render salvata su render backend .env
         "http://localhost:3000" # fallback per sviluppo
-        # Quando vai su Render: "https://tuo-frontend.onrender.com"
     )
 
     app.add_middleware(
