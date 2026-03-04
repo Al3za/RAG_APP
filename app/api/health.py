@@ -6,5 +6,6 @@ router = APIRouter()
 def healt_check():
     return {
         "status":"ok",
-        "service":"rag-api"
+        "service":"rag-api" 
     }
+

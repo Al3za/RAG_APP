@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends 
 # from app.utils.auth import get_current_user #jwt_nextauth_verify
 from app.api.health import router as health_router # import the endpoint createn on this path
+from app.api.uptime_robot_healt import router as uptimeRobot_health_router
 from app.api.jtw_test import router as jwt_router_test
 from app.api.upload import router as upload_router # /upload_pdf
 from app.api.upload_status import router as status_upload
@@ -15,6 +16,7 @@ app = FastAPI(title=settings.APP_NAME) # "RAG PDF API"
 setup_cors(app) # COORS centralizzato
 
 app.include_router(health_router)
+app.include_router(uptimeRobot_health_router)
 app.include_router(jwt_router_test)  # delete on prod
 app.include_router(redis_test_on_Render) # delete on prod
 app.include_router(upload_router)
