@@ -86,13 +86,13 @@ Build RAG_APP from the source and install dependencies:
 
 ### Usage
 
-**Crete a docker container with the latest redis image pulled from docker hub:**
+**Crete a docker container with the latest redis image pulled from docker hub:** <br>
 docker run -d --name my-redis -p 6379:6379 redis 
 
-**run the container by name:**
+**run the container by name:** <br>
 docker start my-redis
 
-**Finally start the app:**
+**Finally start the app:**<br>
 uvicorn app.main:app --reload
 
 
