@@ -281,6 +281,9 @@ def ingest_pdf(file_path: str, namespace: str):
            embedding=embeddings_model, # trasforma i final chunks in embeddings prima dello storage in pinecone
            namespace= namespace #user_id # inserire ordinatamente i dati nel db sotto la cartell user_id
          ) 
+        
+        # Cancella i chunks vecchi nello stesso namespace
+        vectorstore.delete(filter={"chunk_id": {"$exists": True}}) #  elimina tutti i documenti nel namespace dell'utente
 
     #    # 4️⃣ Inserisci chunks
         vectorstore.add_documents(all_chunks) # trasforma i chunks in embeddings e inseriscili nel db (con id diverso  diverso ogni user, cosi' i dati pdf non si mescolano tra users)

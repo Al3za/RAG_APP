@@ -36,21 +36,30 @@ async def upload_pdf(namespace: str = Depends(get_user_namespace), # otteniamo l
         return {"error": "Only PDF files are allowed for this demo"}
 
     # RATE LIMIT HERE
+    
     rate_limit(namespace) # docker start my-redis in local 
 
     print('rate limit')
     ## CHECK TOTAL PDF PAGE (NOT BIGGER THAT 50 PAGES ALLOWED). Se non > 50, salva su s3, 
     # e procedi con ingest
-    await check_pdf_pages(file) # ritorna error(si blocca qui e manda error detail al frontend) o tatal page(continua con ingest)
+    await check_pdf_pages(file) # se un pdf carcato dal frontend > 50 pages ritorna error(si blocca qui e manda error detail al frontend) 
+    # altrimenti continua con s3 storage e ingest 
     
     # print('check_pdf_pages')
     ## namespace is the jwt token user_email already verified and hashed, ready to saved in s3 and pinecone
     ## for multitenant rag app
     # print(' hased email namespace =', namespace)
 
-    # inizia un try catch qui per avere un mess in caso lo storage di s3 andasse male
+    
+   # namespace is hashed
+    # file_key = f"{namespace}/{uuid4()}_{file.filename}" # working
+    file_key = f"{namespace}/latest.pdf" # sovrascrive il pdf caricato prima
 
-    file_key = f"{namespace}/{uuid4()}_{file.filename}"
+      # 🔹 1️⃣ Elimina PDF precedente su S3 (opzionale, sicurezza, ma non necessario, perche sopra sovrascriviamo il file pdf precedente)
+    # try:
+    #     s3.delete_object(Bucket=BUCKET_NAME, Key=file_key)
+    # except Exception:
+    #     pass  # se non esiste, ok
     
     # 1️⃣ Upload pdf su S3
     s3.upload_fileobj(file.file, BUCKET_NAME, file_key)
