@@ -30,7 +30,6 @@
     - [Prerequisites](#prerequisites)
     - [Installation](#installation)
     - [Usage](#usage)
-    - [Testing](#testing)
 
 ---
 
@@ -42,7 +41,7 @@
 
 This project aims to optimize document processing pipelines for accuracy and scalability. The core features include:
 -  **Storage:** Pdf stored in **s3** bucket
--  **Multi Tenant** Pdf related to 'logged in' in user email(hashed before uploading)
+-  **Multi Tenant** Pdf related to user email(email has been hashed before uploading)
 - 🧩 **Puzzle Piece:** Semantic chunking and cross-page overlap to preserve context across multi-page documents.
 - 🧹 **Broom:** PDF text cleaning and normalization for high-quality downstream analysis.
 - 🔐 **Lock:** Secure JWT-based user authentication and management.
@@ -87,19 +86,15 @@ Build RAG_APP from the source and install dependencies:
 
 ### Usage
 
-Run the project with:
+**Crete a docker container with the latest redis image pulled from docker hub:**
+docker run -d --name my-redis -p 6379:6379 redis 
 
-**Using [pip](https://pypi.org/project/pip/):**
-
-```sh
-docker run -d --name my-redis -p 6379:6379 redis (To crete a docker container with the latest redis image pulled from docker hub)
-
-then run the container by name:
+**run the container by name:**
 docker start my-redis
 
-and finally start the app:
+**Finally start the app:**
 uvicorn app.main:app --reload
-```
+
 
 
 
