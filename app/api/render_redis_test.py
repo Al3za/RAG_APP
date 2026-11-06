@@ -8,9 +8,8 @@ def redis_test():
     redis_client.set("render_test", "connected", ex=60) 
     return  {"value": redis_client.get("render_test")}
 
-# vai su https://rag-app-2s6e.onrender.com/redis_test dopo aver deployato su Render per vedere se redis
-#  funziona anche su render e' non solo in locale
-# se vedi come return "{"value":"connected"}", 🎉 Redis è collegato correttamente in produzione."
+# vai su https://rag-app-2s6e.onrender.com/redis_test dopo aver deployato su Render per vedere se redis funziona anche su render e' non solo in locale
+# Se vediamo come return "{"value":"connected"}", 🎉 Redis è collegato correttamente in produzione."
 
 
 
