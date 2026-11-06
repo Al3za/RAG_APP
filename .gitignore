@@ -12,3 +12,4 @@ ingest_desc.py
 notes/
 app/api/upload_descrizione.py
 app/core/AboutEmbeddings_and_indexes.txt
+.vscode/
